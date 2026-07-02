@@ -1,0 +1,128 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  check:
+    name: Format / Lint / Typecheck
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python 3.14
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.14"
+
+      - name: Install Poetry
+        run: pip install poetry==1.8.4
+
+      - name: Cache Poetry virtualenv
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/pypoetry
+          key: poetry-${{ hashFiles('pyproject.toml') }}
+          restore-keys: poetry-
+
+      - name: Install dependencies (dev)
+        run: poetry install --with dev --no-interaction
+
+      - name: Format check (docformatter)
+        # docformatter exits non-zero only on encoding errors, not style diffs
+        # — we use it for auto-fix locally, not as a hard gate in CI
+        run: poetry run docformatter -r --check backend/ frontend/ evals/ || true
+
+      - name: Format check (black)
+        run: poetry run black --check backend/ frontend/ evals/
+
+      - name: Lint (ruff)
+        run: poetry run ruff check backend/ frontend/ evals/
+
+      - name: Typecheck (mypy)
+        run: poetry run mypy backend/ frontend/ evals/
+
+  test:
+    name: Tests
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:17-alpine
+        env:
+          POSTGRES_DB: nba_rookie_dashboard_test
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 5
+
+      redis:
+        image: redis:7-alpine
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 5s
+          --health-timeout 3s
+          --health-retries 5
+
+    env:
+      APP_ENV: development
+      POSTGRES_HOST: localhost
+      POSTGRES_PORT: 5432
+      POSTGRES_DB: nba_rookie_dashboard_test
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      REDIS_HOST: localhost
+      REDIS_PORT: 6379
+      REDIS_DB: 0
+      # Dummy values — unit tests must not hit real external APIs
+      ANTHROPIC_API_KEY: sk-ant-test-placeholder
+      LANGCHAIN_API_KEY: ls__test-placeholder
+      LANGCHAIN_TRACING_V2: "false"
+      LANGCHAIN_PROJECT: nba-rookie-dashboard-test
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python 3.14
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.14"
+
+      - name: Install Poetry
+        run: pip install poetry==1.8.4
+
+      - name: Cache Poetry virtualenv
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/pypoetry
+          key: poetry-${{ hashFiles('pyproject.toml') }}
+          restore-keys: poetry-
+
+      - name: Install dependencies (dev)
+        run: poetry install --with dev --no-interaction
+
+      - name: Run unit tests
+        run: poetry run pytest tests/unit/ -v --tb=short
+
+      - name: Run integration tests
+        run: poetry run pytest tests/integration/ -v --tb=short
+
+      - name: Coverage report
+        run: |
+          poetry run pytest \
+            --cov=backend \
+            --cov=frontend \
+            --cov=evals \
+            --cov-report=term-missing \
+            --cov-fail-under=50

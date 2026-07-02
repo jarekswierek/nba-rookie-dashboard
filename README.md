@@ -71,11 +71,11 @@ graph LR
 
 ## Project status
 
-`[██░░░░░░░░] 12%` — Early MVP, active development
+`[██░░░░░░░░] 13%` — Early MVP, active development
 
 | Epic | | Status |
 |---|---|---|
-| 1 · Infrastructure & tooling | 🔄 | In progress |
+| 1 · Infrastructure & tooling | ✅ | Done |
 | 2 · NBA data pipeline (Redis + PostgreSQL) | ⏳ | Planned |
 | 3 · Season / draft logic | ⏳ | Planned |
 | 4 · Stats aggregation + rolling averages | ⏳ | Planned |
@@ -86,15 +86,16 @@ graph LR
 
 ---
 
-## Quickstart (coming soon)
+## Quickstart
 
 ```bash
-cp .env.example .env   # fill in ANTHROPIC_API_KEY, LANGCHAIN_API_KEY
-make dev               # docker compose up — API + UI + Redis + PostgreSQL
+cp .env.example .env        # fill in 3 required keys: POSTGRES_PASSWORD, ANTHROPIC_API_KEY, LANGCHAIN_API_KEY
+make dev                    # docker compose up — API + UI + Redis + PostgreSQL
+make verify-langsmith       # confirm LangSmith tracing is active
 # open http://localhost:8501
 ```
 
-Full setup guide will be added once the first working build is ready.
+API docs available at `http://localhost:8000/docs`.
 
 ---
 
