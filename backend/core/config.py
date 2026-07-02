@@ -1,8 +1,8 @@
 """Application configuration via pydantic-settings.
 
-All settings are read from environment variables or a .env file.
-The application will raise a ValidationError at startup if any
-required variable is missing — fail-fast is intentional.
+All settings are read from environment variables or a .env file. The application
+will raise a ValidationError at startup if any required variable is missing —
+fail-fast is intentional.
 """
 
 from functools import lru_cache
@@ -15,8 +15,8 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 class Settings(BaseSettings):
     """Central configuration object.
 
-    Validated at import time — missing required fields raise
-    ValidationError immediately, before the first request is served.
+    Validated at import time — missing required fields raise ValidationError
+    immediately, before the first request is served.
     """
 
     model_config = SettingsConfigDict(
@@ -27,9 +27,7 @@ class Settings(BaseSettings):
     )
 
     # ── Application ───────────────────────────────────────────────────
-    app_env: Literal["development", "staging", "production"] = (
-        "development"
-    )
+    app_env: Literal["development", "staging", "production"] = "development"
     app_debug: bool = False
 
     # ── PostgreSQL ────────────────────────────────────────────────────
@@ -80,10 +78,7 @@ class Settings(BaseSettings):
     @property
     def redis_url(self) -> str:
         """Redis connection URL."""
-        return (
-            f"redis://{self.redis_host}:{self.redis_port}"
-            f"/{self.redis_db}"
-        )
+        return f"redis://{self.redis_host}:{self.redis_port}" f"/{self.redis_db}"
 
     @property
     def is_production(self) -> bool:
@@ -95,7 +90,7 @@ class Settings(BaseSettings):
 def get_settings() -> Settings:
     """Return cached Settings instance.
 
-    Uses lru_cache so the .env file is read exactly once per process.
-    In tests, call get_settings.cache_clear() to reset between cases.
+    Uses lru_cache so the .env file is read exactly once per process. In tests,
+    call get_settings.cache_clear() to reset between cases.
     """
     return Settings()

@@ -31,9 +31,7 @@ def main() -> None:
         print(f"     tracing  : {settings.langchain_tracing_v2}")
     except Exception as exc:
         print(f"[FAIL] Settings — {exc}")
-        print(
-            "       Hint: copy .env.example to .env and fill in the values."
-        )
+        print("       Hint: copy .env.example to .env and fill in the values.")
         sys.exit(1)
 
     # Step 2: create LangSmith client
@@ -76,9 +74,7 @@ def main() -> None:
         )
     except Exception as exc:
         print(f"[FAIL] Run submission — {exc}")
-        print(
-            "       Hint: check LANGCHAIN_API_KEY and LANGCHAIN_PROJECT."
-        )
+        print("       Hint: check LANGCHAIN_API_KEY and LANGCHAIN_PROJECT.")
         sys.exit(1)
 
 
