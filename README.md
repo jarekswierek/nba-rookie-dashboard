@@ -2,7 +2,7 @@
 
 > **Status: Early MVP — in active development**
 
-An analytics dashboard that tracks NBA rookie statistics and generates AI-powered narrative analysis using a **LangGraph agent**, **Claude Haiku**, and a two-level cache (Redis + PostgreSQL). Built as a portfolio project for an AI Engineer role.
+An analytics dashboard that tracks NBA rookie statistics and generates AI-powered narrative analysis using a **LangGraph agent**, **Claude Haiku**, and a two-level cache (Redis + PostgreSQL).
 
 ![mockup](docs/mockup-preview.png)
 *UI mockup — implementation in progress*
