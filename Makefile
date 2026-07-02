@@ -1,5 +1,5 @@
 .DEFAULT_GOAL := help
-SOURCES := backend/ frontend/ evals/
+SOURCES := backend/ frontend/
 
 # ── Help ─────────────────────────────────────────────────────────────────────
 

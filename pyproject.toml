@@ -7,7 +7,6 @@ readme = "README.md"
 packages = [
     { include = "backend" },
     { include = "frontend" },
-    { include = "evals" },
 ]
 
 [tool.poetry.dependencies]

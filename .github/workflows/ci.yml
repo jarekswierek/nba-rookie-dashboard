@@ -123,6 +123,5 @@ jobs:
           poetry run pytest \
             --cov=backend \
             --cov=frontend \
-            --cov=evals \
             --cov-report=term-missing \
             --cov-fail-under=50
