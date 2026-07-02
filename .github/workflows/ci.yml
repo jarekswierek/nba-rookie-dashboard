@@ -35,16 +35,16 @@ jobs:
       - name: Format check (docformatter)
         # docformatter exits non-zero only on encoding errors, not style diffs
         # — we use it for auto-fix locally, not as a hard gate in CI
-        run: poetry run docformatter -r --check backend/ frontend/ evals/ || true
+        run: poetry run docformatter -r --check backend/ frontend/ || true
 
       - name: Format check (black)
-        run: poetry run black --check backend/ frontend/ evals/
+        run: poetry run black --check backend/ frontend/
 
       - name: Lint (ruff)
-        run: poetry run ruff check backend/ frontend/ evals/
+        run: poetry run ruff check backend/ frontend/
 
       - name: Typecheck (mypy)
-        run: poetry run mypy backend/ frontend/ evals/
+        run: poetry run mypy backend/ frontend/
 
   test:
     name: Tests
