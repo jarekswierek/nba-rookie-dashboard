@@ -21,7 +21,7 @@ import datetime
 import logging
 from typing import Any
 
-from sqlalchemy import select
+from sqlalchemy import delete, select
 from sqlalchemy.dialects.postgresql import insert as pg_insert
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -83,7 +83,7 @@ async def upsert_game_log(
     expires_at = now + _TTL_GAME_LOG
 
     await session.execute(
-        PlayerGameLogs.__table__.delete().where(
+        delete(PlayerGameLogs).where(
             PlayerGameLogs.player_id == player_id,
             PlayerGameLogs.season == season,
         )
@@ -343,7 +343,7 @@ async def upsert_narrative(
     # Delete existing row then insert — simpler than a composite ON CONFLICT
     # because ai_narratives has no unique constraint on (player_id, season).
     await session.execute(
-        AiNarratives.__table__.delete().where(
+        delete(AiNarratives).where(
             AiNarratives.player_id == player_id,
             AiNarratives.season == season,
         )

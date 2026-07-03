@@ -16,6 +16,7 @@ Design principles:
 """
 
 import datetime
+from typing import Any
 
 from sqlalchemy import Date, DateTime, Float, Integer, String, Text
 from sqlalchemy.dialects.postgresql import JSONB
@@ -43,7 +44,7 @@ class PlayerGameLogs(Base):
     )
     player_id: Mapped[int] = mapped_column(Integer, nullable=False, index=True)
     season: Mapped[str] = mapped_column(String(10), nullable=False)
-    data: Mapped[dict] = mapped_column(JSONB, nullable=False)
+    data: Mapped[dict[str, Any]] = mapped_column(JSONB, nullable=False)
     last_game_date: Mapped[datetime.date | None] = mapped_column(
         Date, nullable=True
     )
@@ -107,7 +108,7 @@ class DraftClasses(Base):
     season_year: Mapped[int] = mapped_column(
         Integer, nullable=False, unique=True, index=True
     )
-    data: Mapped[dict] = mapped_column(JSONB, nullable=False)
+    data: Mapped[dict[str, Any]] = mapped_column(JSONB, nullable=False)
     fetched_at: Mapped[datetime.datetime] = mapped_column(
         DateTime(timezone=True),
         server_default=func.now(),
@@ -134,7 +135,7 @@ class SeasonAverages(Base):
     season: Mapped[str] = mapped_column(
         String(10), nullable=False, unique=True, index=True
     )
-    data: Mapped[dict] = mapped_column(JSONB, nullable=False)
+    data: Mapped[dict[str, Any]] = mapped_column(JSONB, nullable=False)
     fetched_at: Mapped[datetime.datetime] = mapped_column(
         DateTime(timezone=True),
         server_default=func.now(),

@@ -23,9 +23,9 @@ caller (FastAPI endpoint) decides whether to regenerate.
 import contextlib
 import datetime
 import logging
-from typing import Any
+from typing import Any, cast
 
-from sqlalchemy import select
+from sqlalchemy import select, update
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from backend.data import cache_postgres as pg
@@ -84,7 +84,7 @@ async def get_game_log(
     # L1 — Redis
     cached = await redis_cache.get_game_log(player_id, season)
     if cached is not None:
-        return cached
+        return cast(dict[str, Any], cached)
 
     # L2 — PostgreSQL
     cached = await pg.get_game_log(session, player_id, season)
@@ -126,7 +126,7 @@ async def invalidate_game_log(
     # L2 invalidation: clear expires_at by setting it to now — the next
     # read will see expires_at <= now and treat it as a miss.
     await session.execute(
-        PlayerGameLogs.__table__.update()
+        update(PlayerGameLogs)
         .where(
             PlayerGameLogs.player_id == player_id,
             PlayerGameLogs.season == season,
@@ -153,7 +153,7 @@ async def get_player_bio(
     # L1 — Redis
     cached = await redis_cache.get_player_bio(player_id)
     if cached is not None:
-        return cached
+        return cast(dict[str, Any], cached)
 
     # L2 — PostgreSQL
     cached = await pg.get_player_bio(session, player_id)
@@ -177,7 +177,7 @@ async def get_player_bio(
         "jersey_number": str(row.get("JERSEY", "")) or None,
     }
 
-    await pg.upsert_player_bio(session, **bio)  # type: ignore[arg-type]
+    await pg.upsert_player_bio(session, **bio)
     await redis_cache.set_player_bio(player_id, bio)
 
     return bio
@@ -197,7 +197,7 @@ async def get_draft_class(
     # L1
     cached = await redis_cache.get_draft_class(season_year)
     if cached is not None:
-        return cached
+        return cast(dict[str, Any], cached)
 
     # L2
     cached = await pg.get_draft_class(session, season_year)
@@ -232,7 +232,7 @@ async def get_season_averages(
     _LEAGUE_SENTINEL = 0
     cached = await redis_cache.get_season_averages(_LEAGUE_SENTINEL, season)
     if cached is not None:
-        return cached
+        return cast(dict[str, Any], cached)
 
     # L2
     cached = await pg.get_season_averages(session, season)
