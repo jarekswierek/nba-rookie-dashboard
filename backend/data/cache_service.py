@@ -20,6 +20,7 @@ stale when ``player_game_logs.last_game_date`` is newer than the narrative's
 caller (FastAPI endpoint) decides whether to regenerate.
 """
 
+import contextlib
 import datetime
 import logging
 from typing import Any
@@ -101,12 +102,10 @@ async def get_game_log(
 
     last_game_date: datetime.date | None = None
     if records:
-        try:
+        with contextlib.suppress(KeyError, ValueError):
             last_game_date = datetime.datetime.strptime(
                 records[0]["GAME_DATE"], "%b %d, %Y"
             ).date()
-        except (KeyError, ValueError):
-            pass
 
     # Write L2 then L1
     await pg.upsert_game_log(session, player_id, season, data, last_game_date)

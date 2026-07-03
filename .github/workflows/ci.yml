@@ -112,6 +112,9 @@ jobs:
       - name: Install dependencies (dev)
         run: poetry install --with dev --no-interaction
 
+      - name: Run database migrations
+        run: poetry run alembic upgrade head
+
       - name: Run unit tests
         run: poetry run pytest tests/unit/ -v --tb=short
 
