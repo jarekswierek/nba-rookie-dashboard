@@ -8,15 +8,12 @@ set (CI sets them via workflow env: block).
 import pytest
 from fastapi.testclient import TestClient
 
+from backend.main import app
+
 
 @pytest.fixture(scope="module")
 def client() -> TestClient:
     """Return TestClient with the real app instance."""
-    from backend.core.config import get_settings
-
-    get_settings.cache_clear()
-    from backend.main import app
-
     return TestClient(app)
 
 

@@ -71,12 +71,12 @@ graph LR
 
 ## Project status
 
-`[██░░░░░░░░] 13%` — Early MVP, active development
+`[███░░░░░░░] 25%` — Early MVP, active development
 
 | Epic | | Status |
 |---|---|---|
 | 1 · Infrastructure & tooling | ✅ | Done |
-| 2 · NBA data pipeline (Redis + PostgreSQL) | ⏳ | Planned |
+| 2 · NBA data pipeline (Redis + PostgreSQL) | ✅ | Done |
 | 3 · Season / draft logic | ⏳ | Planned |
 | 4 · Stats aggregation + rolling averages | ⏳ | Planned |
 | 5 · LangGraph AI narrative engine | ⏳ | Planned |

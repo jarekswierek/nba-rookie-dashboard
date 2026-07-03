@@ -17,13 +17,15 @@ import sys
 import uuid
 from datetime import datetime, timezone
 
+import langsmith
+
+from backend.core.config import get_settings
+
 
 def main() -> None:
     """Run end-to-end LangSmith connectivity check."""
     # Step 1: validate settings load
     try:
-        from backend.core.config import get_settings
-
         settings = get_settings()
         print("[OK] Settings loaded")
         print(f"     project  : {settings.langchain_project}")
@@ -36,8 +38,6 @@ def main() -> None:
 
     # Step 2: create LangSmith client
     try:
-        import langsmith
-
         client = langsmith.Client(
             api_url=settings.langchain_endpoint,
             api_key=settings.langchain_api_key,

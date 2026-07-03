@@ -21,6 +21,8 @@ RUN poetry config virtualenvs.create false \
 
 # Copy application code
 COPY backend/ ./backend/
+COPY alembic/ ./alembic/
+COPY alembic.ini ./
 
 EXPOSE 8000
 
