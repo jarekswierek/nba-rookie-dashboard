@@ -4,6 +4,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from backend.api.routes import draft as draft_router
+from backend.api.routes import players as players_router
 from backend.api.routes import season as season_router
 from backend.core.config import get_settings
 
@@ -29,6 +30,9 @@ app.add_middleware(
 
 app.include_router(season_router.router, prefix="/api/season", tags=["season"])
 app.include_router(draft_router.router, prefix="/api/draft", tags=["draft"])
+app.include_router(
+    players_router.router, prefix="/api/players", tags=["players"]
+)
 
 
 @app.get("/health", tags=["ops"])
