@@ -29,12 +29,14 @@ TTL_SEASON_AVERAGES: int = 4 * 3600  # 4 hours
 TTL_DRAFT: int = 24 * 3600  # 24 hours
 TTL_BIO: int = 24 * 3600  # 24 hours
 TTL_ROSTER: int = 24 * 3600  # 24 hours
+TTL_SCOREBOARD: int = 1 * 3600  # 1 hour
 
 # ── Key prefixes ───────────────────────────────────────────────────────────
 _PREFIX_GAME_LOG = "nba:game_log"
 _PREFIX_SEASON_AVG = "nba:season_avg"
 _PREFIX_DRAFT = "nba:draft"
 _PREFIX_BIO = "nba:bio"
+_PREFIX_SCOREBOARD = "nba:scoreboard"
 
 
 def _make_client() -> aioredis.Redis:  # type: ignore[type-arg]
@@ -144,3 +146,13 @@ async def set_player_bio(player_id: int, data: Any) -> None:
 async def invalidate_player_bio(player_id: int) -> None:
     """Force-expire bio — used after a confirmed trade or roster move."""
     await _delete(f"{_PREFIX_BIO}:{player_id}")
+
+
+async def get_scoreboard() -> Any | None:
+    """Return cached season status dict or *None* on miss."""
+    return await _get(f"{_PREFIX_SCOREBOARD}:current")
+
+
+async def set_scoreboard(data: Any) -> None:
+    """Cache the processed season status for one hour."""
+    await _set(f"{_PREFIX_SCOREBOARD}:current", data, TTL_SCOREBOARD)
