@@ -1,10 +1,10 @@
 """Integration tests for the /api/players endpoints.
 
-Class TestGameLogsValidation uses a synchronous TestClient and requires no
-running services — validates FastAPI input constraints only.
+Validation classes use a synchronous TestClient and require no running
+services — they cover FastAPI input constraints only.
 
-Class TestGameLogsEndpoint requires the full Docker Compose stack
-(PostgreSQL + Redis). The nba_api layer is patched for determinism.
+Data-path classes require the full Docker Compose stack (PostgreSQL +
+Redis). The nba_api layer is patched for determinism.
 """
 
 from collections.abc import AsyncGenerator
@@ -94,6 +94,34 @@ class TestGameLogsValidation:
         assert response.status_code == 422
 
 
+class TestAggregatedStatsValidation:
+    """Input validation tests for the aggregated-stats endpoint."""
+
+    @pytest.fixture(scope="class")
+    def client(self) -> TestClient:
+        return TestClient(app, raise_server_exceptions=False)
+
+    def test_invalid_season_format_returns_422(self, client: TestClient) -> None:
+        response = client.get(
+            f"/api/players/{_PLAYER_ID}/aggregated-stats",
+            params={"season": "abc"},
+        )
+        assert response.status_code == 422
+
+    def test_invalid_player_id_returns_422(self, client: TestClient) -> None:
+        response = client.get(
+            "/api/players/0/aggregated-stats",
+            params={"season": _SEASON},
+        )
+        assert response.status_code == 422
+
+    def test_missing_season_returns_422(self, client: TestClient) -> None:
+        response = client.get(
+            f"/api/players/{_PLAYER_ID}/aggregated-stats"
+        )
+        assert response.status_code == 422
+
+
 @pytest.mark.asyncio(loop_scope="session")
 class TestGameLogsEndpoint:
     """Full data-path tests — requires Docker Compose stack."""
@@ -147,3 +175,35 @@ class TestGameLogsEndpoint:
             )
 
         assert response.json()["fetched_at"] is not None
+
+
+@pytest.mark.asyncio(loop_scope="session")
+class TestAggregatedStatsEndpoint:
+    """Full data-path tests for aggregated-stats — requires Docker stack."""
+
+    async def test_returns_200_with_stats_shape(
+        self, async_client: AsyncClient
+    ) -> None:
+        with patch(
+            "backend.data.cache_service.nba_client.fetch_game_log",
+            new=AsyncMock(return_value=_FAKE_GAME_LOG_DF),
+        ):
+            response = await async_client.get(
+                f"/api/players/{_PLAYER_ID}/aggregated-stats",
+                params={"season": _SEASON},
+            )
+
+        assert response.status_code == 200
+        body = response.json()
+        stats = body["stats"]
+        assert stats["player_id"] == _PLAYER_ID
+        assert stats["season"] == _SEASON
+        assert stats["total_games"] == 2
+        assert stats["games_played"] == 2
+        # 2 games < 5 → all windows empty but shape present
+        assert stats["pts"]["w5"]["avg"] is None
+        assert stats["pts"]["w5"]["direction"] == "stable"
+        assert stats["pts"]["w5"]["games_played"] == 2
+        # Season average is populated from the 2 played games
+        assert stats["pts_season_avg"] == pytest.approx(21.0)
+        assert body["fetched_at"] is not None

@@ -79,3 +79,8 @@ class GameLogsResponse(BaseModel):
     season: str
     game_logs: list[GameLog]
     fetched_at: datetime.datetime | None
+
+
+class AggregatedStatsResponse(BaseModel):
+    stats: AggregatedStats
+    fetched_at: datetime.datetime | None
