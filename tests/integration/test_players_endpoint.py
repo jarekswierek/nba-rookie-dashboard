@@ -68,12 +68,13 @@ async def async_client(
     app.dependency_overrides.clear()
 
 
+@pytest.fixture(scope="module")
+def client() -> TestClient:
+    return TestClient(app, raise_server_exceptions=False)
+
+
 class TestGameLogsValidation:
     """Input validation tests — no Docker stack required."""
-
-    @pytest.fixture(scope="class")
-    def client(self) -> TestClient:
-        return TestClient(app, raise_server_exceptions=False)
 
     def test_invalid_season_format_returns_422(self, client: TestClient) -> None:
         response = client.get(
@@ -96,10 +97,6 @@ class TestGameLogsValidation:
 
 class TestAggregatedStatsValidation:
     """Input validation tests for the aggregated-stats endpoint."""
-
-    @pytest.fixture(scope="class")
-    def client(self) -> TestClient:
-        return TestClient(app, raise_server_exceptions=False)
 
     def test_invalid_season_format_returns_422(self, client: TestClient) -> None:
         response = client.get(
