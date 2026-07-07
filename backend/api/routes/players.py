@@ -6,6 +6,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from backend.api.deps import get_db_session
 from backend.data.aggregation_service import get_aggregated_stats
 from backend.data.game_log_service import get_game_logs
+from backend.data.gap_service import detect_gaps
 from backend.schemas.stats import AggregatedStatsResponse, GameLogsResponse
 
 router = APIRouter()
@@ -23,6 +24,7 @@ async def get_player_game_logs(
         player_id=player_id,
         season=season,
         game_logs=logs,
+        gaps=detect_gaps(logs),
         fetched_at=fetched_at,
     )
 

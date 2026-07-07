@@ -5,6 +5,8 @@ from typing import Literal
 
 from pydantic import BaseModel, computed_field
 
+from backend.schemas.gaps import GapEvent
+
 
 class PlayerProfile(BaseModel):
     player_id: int
@@ -22,6 +24,11 @@ class PlayerProfile(BaseModel):
 
 
 class GameLog(BaseModel):
+    """One game appearance; all stats are None together when it was a DNP.
+
+    Percentages (``fg_pct``, ``fg3_pct``) are stored as 0.0-1.0, not 0-100.
+    """
+
     game_id: str
     game_date: datetime.date
     matchup: str
@@ -40,6 +47,9 @@ class GameLog(BaseModel):
 
 
 class RollingWindow(BaseModel):
+    """Rolling average for one stat; ``avg`` is None (never 0.0) on low
+    sample."""
+
     window_size: int
     avg: float | None
     delta: float | None
@@ -78,6 +88,7 @@ class GameLogsResponse(BaseModel):
     player_id: int
     season: str
     game_logs: list[GameLog]
+    gaps: list[GapEvent]
     fetched_at: datetime.datetime | None
 
 

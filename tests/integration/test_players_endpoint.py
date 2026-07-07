@@ -143,6 +143,7 @@ class TestGameLogsEndpoint:
         assert data["player_id"] == _PLAYER_ID
         assert data["season"] == _SEASON
         assert len(data["game_logs"]) == 2
+        assert data["gaps"] == []
 
     async def test_game_logs_sorted_ascending(
         self, async_client: AsyncClient

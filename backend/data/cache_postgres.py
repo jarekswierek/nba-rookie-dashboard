@@ -10,7 +10,7 @@ Callers follow this pattern:
   3. Fetch from nba_api — write to both L2 and L1, return.
 
 This module only handles step 2 (read / write to PostgreSQL). The
-orchestration logic lives in the service layer (TASK-204).
+orchestration logic lives in ``cache_service``.
 
 TTLs (PostgreSQL):
   - game_log / season_averages : 24 hours
