@@ -21,4 +21,4 @@ class AgentState(TypedDict):
 
     trend_analysis: NotRequired[dict[str, Any] | None]
     context_events: NotRequired[list[dict[str, Any]] | None]
-    narrative: NotRequired[str | None]
+    narrative: NotRequired[dict[str, Any] | None]

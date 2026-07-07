@@ -1,17 +1,19 @@
-"""Smoke tests for the narrative graph skeleton.
+"""Smoke tests for the narrative graph wiring.
 
-Verifies wiring: all three nodes fire and their placeholder markers land
-in the final state. Real behaviour ships in later tasks — this suite
-only guards the shape of the pipeline.
+Verifies that all three nodes fire in order and their outputs land in
+the final state. The LLM call in generate_narrative is mocked so the
+suite runs without hitting Anthropic.
 """
 
 import datetime
+from unittest.mock import AsyncMock, MagicMock
 
 import pytest
 
 from backend.agent.graph import build_graph
 from backend.agent.state import AgentState
 from backend.schemas.gaps import GapEvent
+from backend.schemas.narrative import PlayerNarrative
 from backend.schemas.stats import (
     AggregatedStats,
     PlayerProfile,
@@ -89,25 +91,51 @@ def sample_state() -> AgentState:
     )
 
 
+def _mock_llm(monkeypatch: pytest.MonkeyPatch) -> None:
+    """Patch generate_narrative's LLM chain to skip the real API call."""
+    fake_narrative = PlayerNarrative(
+        summary="Test Rookie is averaging modest numbers.",
+        trend_direction="stable",
+        confidence=0.5,
+    )
+    mock_chain = MagicMock()
+    mock_chain.ainvoke = AsyncMock(return_value=fake_narrative)
+    mock_prompt = MagicMock()
+    mock_prompt.__or__.return_value = mock_chain
+    mock_prompt_cls = MagicMock()
+    mock_prompt_cls.from_messages.return_value = mock_prompt
+    mock_llm = MagicMock()
+    mock_llm.with_structured_output.return_value = MagicMock()
+    monkeypatch.setattr(
+        "backend.agent.nodes.generate_narrative.ChatPromptTemplate",
+        mock_prompt_cls,
+    )
+    monkeypatch.setattr(
+        "backend.agent.nodes.generate_narrative.get_anthropic_client",
+        lambda: mock_llm,
+    )
+
+
 @pytest.mark.asyncio(loop_scope="function")
 async def test_graph_runs_all_three_nodes(
     sample_state: AgentState,
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
-    """All three nodes fire and their skeleton markers appear in final state."""
+    """All three nodes fire and each populates its expected slot in state."""
     monkeypatch.setenv("LANGCHAIN_TRACING_V2", "false")
+    _mock_llm(monkeypatch)
 
     graph = build_graph()
     result = await graph.ainvoke(sample_state)
 
-    # analyze_trends is fully implemented (empty stats → empty analysis)
     assert result["trend_analysis"]["signals"] == []
     assert result["trend_analysis"]["has_significant_trends"] is False
-    # detect_context is implemented — one gap in sample_state → one event
     assert len(result["context_events"]) == 1
     assert result["context_events"][0]["type"] == "return_from_absence"
-    # generate_narrative still skeleton
-    assert result["narrative"] == "__skeleton__"
+    narrative = result["narrative"]
+    assert isinstance(narrative, dict)
+    assert narrative["summary"].startswith("Test Rookie")
+    assert narrative["trend_direction"] == "stable"
 
 
 @pytest.mark.asyncio(loop_scope="function")
@@ -117,6 +145,7 @@ async def test_graph_preserves_input_fields(
 ) -> None:
     """Input state (profile, stats, gaps) passes through unchanged."""
     monkeypatch.setenv("LANGCHAIN_TRACING_V2", "false")
+    _mock_llm(monkeypatch)
 
     graph = build_graph()
     result = await graph.ainvoke(sample_state)

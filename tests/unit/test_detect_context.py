@@ -145,7 +145,7 @@ class TestDisplay:
             end_date=datetime.date(2024, 11, 19),
         )
         result = _detect_context([gap], _stats(total_games=20))
-        assert result.events[0].display == "Returned from 3-game absence (Nov 15 – Nov 19)"
+        assert result.events[0].display == "Returned from 3-game absence (Nov 15 - Nov 19)"
 
     def test_currently_absent_display_format(self) -> None:
         gap = GapEvent(
@@ -166,7 +166,7 @@ class TestDisplay:
         )
         result = _detect_context([gap], _stats(total_games=25))
         extended = next(e for e in result.events if isinstance(e, ExtendedAbsence))
-        assert extended.display == "Extended 12-game absence (Jan 05 – Jan 28)"
+        assert extended.display == "Extended 12-game absence (Jan 05 - Jan 28)"
 
 
 @pytest.mark.asyncio(loop_scope="function")
