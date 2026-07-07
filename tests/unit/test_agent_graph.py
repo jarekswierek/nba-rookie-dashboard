@@ -100,7 +100,10 @@ async def test_graph_runs_all_three_nodes(
     graph = build_graph()
     result = await graph.ainvoke(sample_state)
 
-    assert result["trend_analysis"] == {"_skeleton": True}
+    # analyze_trends is fully implemented (empty stats → empty analysis)
+    assert result["trend_analysis"]["signals"] == []
+    assert result["trend_analysis"]["has_significant_trends"] is False
+    # detect_context and generate_narrative still skeleton
     assert result["context_events"] == [{"_skeleton": True}]
     assert result["narrative"] == "__skeleton__"
 
