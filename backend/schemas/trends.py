@@ -21,8 +21,8 @@ class TrendAnalysis(BaseModel):
     """Ranked trend signals plus a headline summary.
 
     ``has_significant_trends`` lets the narrative node switch tone between
-    "consistent performance" and trend-driven prose without re-scanning
-    the signal list.
+    "consistent performance" and trend-driven prose without re-scanning the
+    signal list.
     """
 
     signals: list[TrendSignal]

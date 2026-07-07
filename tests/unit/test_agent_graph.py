@@ -57,8 +57,8 @@ def sample_state() -> AgentState:
     stats = AggregatedStats(
         player_id=1,
         season="2024-25",
-        total_games=0,
-        games_played=0,
+        total_games=20,
+        games_played=17,
         pts=_empty_stat_windows(),
         ast=_empty_stat_windows(),
         reb=_empty_stat_windows(),
@@ -103,8 +103,10 @@ async def test_graph_runs_all_three_nodes(
     # analyze_trends is fully implemented (empty stats → empty analysis)
     assert result["trend_analysis"]["signals"] == []
     assert result["trend_analysis"]["has_significant_trends"] is False
-    # detect_context and generate_narrative still skeleton
-    assert result["context_events"] == [{"_skeleton": True}]
+    # detect_context is implemented — one gap in sample_state → one event
+    assert len(result["context_events"]) == 1
+    assert result["context_events"][0]["type"] == "return_from_absence"
+    # generate_narrative still skeleton
     assert result["narrative"] == "__skeleton__"
 
 

@@ -37,7 +37,7 @@ _STRENGTH_THRESHOLDS: dict[_StatName, tuple[float, float]] = {
     "ast": (0.25, 0.10),
     "reb": (0.25, 0.10),
     "min": (0.20, 0.08),
-    "fg_pct": (0.06, 0.03),   # absolute pp
+    "fg_pct": (0.06, 0.03),  # absolute pp
     "fg3_pct": (0.06, 0.03),  # absolute pp
 }
 
@@ -155,7 +155,9 @@ def _analyze(stats: AggregatedStats) -> TrendAnalysis:
     """Pure entry point — exposed for direct unit testing without LangGraph."""
     if stats.games_played == 0:
         return TrendAnalysis(
-            signals=[], summary="No games played yet", has_significant_trends=False
+            signals=[],
+            summary="No games played yet",
+            has_significant_trends=False,
         )
 
     signals: list[TrendSignal] = []
@@ -166,7 +168,10 @@ def _analyze(stats: AggregatedStats) -> TrendAnalysis:
         window_size, rolling = picked
         signals.append(
             _build_signal(
-                stat_name, window_size, rolling, _season_avg_for(stats, stat_name)
+                stat_name,
+                window_size,
+                rolling,
+                _season_avg_for(stats, stat_name),
             )
         )
 
@@ -182,5 +187,6 @@ def _analyze(stats: AggregatedStats) -> TrendAnalysis:
 
 
 async def analyze_trends(state: AgentState) -> dict[str, Any]:
-    """Return TrendAnalysis derived from ``state['stats']``, serialised to dict."""
+    """Return TrendAnalysis derived from ``state['stats']``, serialised to
+    dict."""
     return {"trend_analysis": _analyze(state["stats"]).model_dump()}
