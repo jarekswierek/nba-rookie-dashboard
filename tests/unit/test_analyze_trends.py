@@ -1,10 +1,10 @@
-"""Unit tests for analyze_trends node (pure logic)."""
+"""Unit tests for analyze_trends pure function."""
 
 from typing import Literal
 
 import pytest
 
-from backend.agent.nodes.analyze_trends import _analyze
+from backend.agent.trend_analysis import analyze_trends
 from backend.schemas.stats import AggregatedStats, RollingWindow, StatWindows
 
 
@@ -67,14 +67,14 @@ def _base_stats(games_played: int = 10) -> AggregatedStats:
 class TestAnalyzeEmpty:
     def test_no_games_returns_empty_analysis(self) -> None:
         stats = _base_stats(games_played=0)
-        result = _analyze(stats)
+        result = analyze_trends(stats)
         assert result.signals == []
         assert result.summary == "No games played yet"
         assert result.has_significant_trends is False
 
     def test_all_windows_empty_returns_no_signals(self) -> None:
         stats = _base_stats(games_played=2)  # games_played > 0 but no full windows
-        result = _analyze(stats)
+        result = analyze_trends(stats)
         assert result.signals == []
 
 
@@ -89,7 +89,7 @@ class TestWindowSelection:
             w15=_rw(window_size=15, avg=18.0, delta=0.5, direction="stable",
                     games_played=15),
         )
-        result = _analyze(stats)
+        result = analyze_trends(stats)
         pts = next(s for s in result.signals if s.stat == "pts")
         assert pts.window == 15
 
@@ -103,7 +103,7 @@ class TestWindowSelection:
                     games_played=5),
             w15=_empty_window(15),
         )
-        result = _analyze(stats)
+        result = analyze_trends(stats)
         pts = next(s for s in result.signals if s.stat == "pts")
         assert pts.window == 5
 
@@ -117,7 +117,7 @@ class TestWindowSelection:
             w15=_rw(window_size=15, avg=None, delta=None, direction="stable",
                     games_played=15),
         )
-        result = _analyze(stats)
+        result = analyze_trends(stats)
         pts = next(s for s in result.signals if s.stat == "pts")
         assert pts.window == 5
 
@@ -132,7 +132,7 @@ class TestStrengthClassification:
             w15=_empty_window(15),
         )
         stats.pts_season_avg = 20.0
-        result = _analyze(stats)
+        result = analyze_trends(stats)
         pts = next(s for s in result.signals if s.stat == "pts")
         assert pts.strength == "strong"
 
@@ -145,7 +145,7 @@ class TestStrengthClassification:
             w15=_empty_window(15),
         )
         stats.pts_season_avg = 20.0
-        result = _analyze(stats)
+        result = analyze_trends(stats)
         pts = next(s for s in result.signals if s.stat == "pts")
         assert pts.strength == "moderate"
 
@@ -158,7 +158,7 @@ class TestStrengthClassification:
             w15=_empty_window(15),
         )
         stats.fg3_pct_season_avg = 0.35
-        result = _analyze(stats)
+        result = analyze_trends(stats)
         fg3 = next(s for s in result.signals if s.stat == "fg3_pct")
         assert fg3.strength == "strong"
 
@@ -170,7 +170,7 @@ class TestStrengthClassification:
             w15=_empty_window(15),
         )
         stats.pts_season_avg = None  # no baseline
-        result = _analyze(stats)
+        result = analyze_trends(stats)
         pts = next(s for s in result.signals if s.stat == "pts")
         assert pts.strength == "weak"
 
@@ -185,7 +185,7 @@ class TestDisplayFormat:
             w15=_empty_window(15),
         )
         stats.pts_season_avg = 20.0
-        result = _analyze(stats)
+        result = analyze_trends(stats)
         pts = next(s for s in result.signals if s.stat == "pts")
         assert pts.display == "+3.4 PTS last 10G"
 
@@ -197,7 +197,7 @@ class TestDisplayFormat:
             w15=_empty_window(15),
         )
         stats.pts_season_avg = 20.0
-        result = _analyze(stats)
+        result = analyze_trends(stats)
         pts = next(s for s in result.signals if s.stat == "pts")
         assert pts.display == "-2.5 PTS last 5G"
 
@@ -209,7 +209,7 @@ class TestDisplayFormat:
             w15=_empty_window(15),
         )
         stats.fg3_pct_season_avg = 0.35
-        result = _analyze(stats)
+        result = analyze_trends(stats)
         fg3 = next(s for s in result.signals if s.stat == "fg3_pct")
         assert fg3.display == "+3.4pp 3P% last 5G"
 
@@ -228,7 +228,7 @@ class TestRanking:
                     w15=_empty_window(15),
                 ),
             )
-        result = _analyze(stats)
+        result = analyze_trends(stats)
         assert result.has_significant_trends is False
         assert len(result.signals) == 6  # every stat reported
 
@@ -248,7 +248,7 @@ class TestRanking:
             w15=_empty_window(15),
         )
         stats.reb_season_avg = 5.0
-        result = _analyze(stats)
+        result = analyze_trends(stats)
         assert result.signals[0].stat == "reb"
         assert result.signals[0].rank == 1
         assert result.signals[0].strength == "strong"
@@ -268,7 +268,7 @@ class TestRanking:
             w15=_empty_window(15),
         )
         stats.ast_season_avg = 5.0
-        result = _analyze(stats)
+        result = analyze_trends(stats)
         pts_rank = next(s for s in result.signals if s.stat == "pts").rank
         ast_rank = next(s for s in result.signals if s.stat == "ast").rank
         assert pts_rank < ast_rank
@@ -289,26 +289,8 @@ class TestSummary:
             w15=_empty_window(15),
         )
         stats.fg3_pct_season_avg = 0.35
-        result = _analyze(stats)
+        result = analyze_trends(stats)
         assert "PTS up" in result.summary
         assert "3P% down" in result.summary
 
 
-@pytest.mark.asyncio(loop_scope="function")
-async def test_node_returns_serialised_dict() -> None:
-    """analyze_trends must return a JSON-serialisable dict for LangGraph state."""
-    from backend.agent.nodes.analyze_trends import analyze_trends
-    from backend.agent.state import AgentState
-
-    stats = _base_stats(games_played=0)
-    state = AgentState(
-        player_id=1,
-        season="2024-25",
-        profile=None,  # type: ignore[typeddict-item]  # not used by analyze_trends
-        stats=stats,
-        gaps=[],
-    )
-    result = await analyze_trends(state)
-    assert "trend_analysis" in result
-    assert isinstance(result["trend_analysis"], dict)
-    assert result["trend_analysis"]["has_significant_trends"] is False

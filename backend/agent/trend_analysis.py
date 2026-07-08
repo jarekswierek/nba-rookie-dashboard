@@ -5,9 +5,8 @@ Adding a stat where up is bad (e.g. turnovers) would require inverting the
 direction-to-goodness mapping when building ``display`` strings.
 """
 
-from typing import Any, Literal, cast
+from typing import Literal, cast
 
-from backend.agent.state import AgentState
 from backend.schemas.stats import AggregatedStats, RollingWindow, StatWindows
 from backend.schemas.trends import TrendAnalysis, TrendSignal
 
@@ -151,8 +150,8 @@ def _season_avg_for(stats: AggregatedStats, name: _StatName) -> float | None:
     return cast("float | None", getattr(stats, f"{name}_season_avg"))
 
 
-def _analyze(stats: AggregatedStats) -> TrendAnalysis:
-    """Pure entry point — exposed for direct unit testing without LangGraph."""
+def analyze_trends(stats: AggregatedStats) -> TrendAnalysis:
+    """Rank the player's rolling-window signals into a TrendAnalysis."""
     if stats.games_played == 0:
         return TrendAnalysis(
             signals=[],
@@ -184,9 +183,3 @@ def _analyze(stats: AggregatedStats) -> TrendAnalysis:
         summary=_summary(signals),
         has_significant_trends=any(s.direction != "stable" for s in signals),
     )
-
-
-async def analyze_trends(state: AgentState) -> dict[str, Any]:
-    """Return TrendAnalysis derived from ``state['stats']``, serialised to
-    dict."""
-    return {"trend_analysis": _analyze(state["stats"]).model_dump()}

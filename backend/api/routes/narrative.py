@@ -11,10 +11,10 @@ from fastapi import APIRouter, Depends, Path, Query
 from sqlalchemy.ext.asyncio import AsyncSession
 from sse_starlette.sse import EventSourceResponse
 
+from backend.agent.context_events import detect_context_events
 from backend.agent.narrative_stream import generate_metadata, stream_summary
-from backend.agent.nodes.analyze_trends import _analyze
-from backend.agent.nodes.detect_context import _detect_context
 from backend.agent.state_builder import build_agent_state
+from backend.agent.trend_analysis import analyze_trends
 from backend.api.deps import get_db_session
 from backend.data import cache_postgres, cache_service
 
@@ -68,8 +68,8 @@ async def _generate_and_stream(
             yield evt
         return
 
-    state["trend_analysis"] = _analyze(state["stats"]).model_dump()
-    context = _detect_context(state["gaps"], state["stats"])
+    state["trend_analysis"] = analyze_trends(state["stats"]).model_dump()
+    context = detect_context_events(state["gaps"], state["stats"])
     state["context_events"] = [e.model_dump(mode="json") for e in context.events]
 
     accumulated: list[str] = []

@@ -1,15 +1,10 @@
 """Interpret raw gap structure as narrative-worthy context events.
 
-Only the most recent gap generates ReturnFromAbsence or CurrentlyAbsent —
-a return from an absence 40 games ago is no longer context for current
-form. Older gaps still emit ExtendedAbsence when long enough. Compound
-events ("MIN up + return = usage boost") are the LLM's job in TASK-504,
-not this node's.
+Only the most recent gap generates ReturnFromAbsence or CurrentlyAbsent — a
+return from an absence 40 games ago is no longer context for current form. Older
+gaps still emit ExtendedAbsence when long enough.
 """
 
-from typing import Any
-
-from backend.agent.state import AgentState
 from backend.schemas.context import (
     ContextEvent,
     ContextEventList,
@@ -53,7 +48,7 @@ def _currently_absent_display(gap: GapEvent) -> str:
     return f"Absent since {since} ({gap.length} games missed)"
 
 
-def _detect_context(
+def detect_context_events(
     gaps: list[GapEvent], stats: AggregatedStats
 ) -> ContextEventList:
     """Return context events derived from *gaps* interpreted against *stats*."""
@@ -94,9 +89,3 @@ def _detect_context(
         )
 
     return ContextEventList(events=events)
-
-
-async def detect_context_events(state: AgentState) -> dict[str, Any]:
-    """Emit gap-derived context events for narrative framing."""
-    result = _detect_context(state["gaps"], state["stats"])
-    return {"context_events": [e.model_dump(mode="json") for e in result.events]}
