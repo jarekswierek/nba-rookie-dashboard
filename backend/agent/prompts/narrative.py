@@ -40,3 +40,36 @@ Recent context:
 Overall trend summary: {trend_summary}
 
 Write the narrative now."""
+
+
+METADATA_SYSTEM_PROMPT = """You are an NBA analyst classifying a rookie's performance.
+
+Given the same statistical signals plus an already-written narrative summary, output only the classification:
+- trend_direction: "up" if signals lean positive, "down" if negative, "stable" if mixed or flat.
+- confidence: 0.0-1.0, based on sample size (games_played), signal strength, and consistency.
+  - 0.85-1.0: 20+ games with multiple strong signals in the same direction
+  - 0.60-0.84: 10-20 games or moderate signals
+  - 0.30-0.59: fewer than 10 games or conflicting signals
+  - below 0.30: almost no data
+"""
+
+
+METADATA_HUMAN_TEMPLATE = """Player: {full_name} ({position})
+Season: {season}
+Games played: {games_played}
+
+Season averages:
+{stats_lines}
+
+Trend signals:
+{trend_lines}
+
+Recent context:
+{context_lines}
+
+Overall trend summary: {trend_summary}
+
+Written narrative:
+{summary}
+
+Classify the trend_direction and confidence now."""

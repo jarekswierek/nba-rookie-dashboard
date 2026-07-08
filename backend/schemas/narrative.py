@@ -15,3 +15,14 @@ class PlayerNarrative(BaseModel):
     summary: str = Field(..., min_length=1, max_length=800)
     trend_direction: Literal["up", "down", "stable"]
     confidence: float = Field(..., ge=0.0, le=1.0)
+
+
+class PlayerNarrativeMetadata(BaseModel):
+    """Classification-only companion to a streamed narrative.
+
+    Used by the SSE endpoint when the summary text streams token-by-token and the
+    trend/confidence classification is generated in a follow-up structured call.
+    """
+
+    trend_direction: Literal["up", "down", "stable"]
+    confidence: float = Field(..., ge=0.0, le=1.0)
