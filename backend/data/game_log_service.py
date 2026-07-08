@@ -23,7 +23,7 @@ def _parse_min(raw: Any) -> float | None:
     try:
         val = float(raw)
         return None if val == 0.0 else val
-    except (TypeError, ValueError):
+    except TypeError, ValueError:
         return None
 
 
@@ -32,7 +32,7 @@ def _parse_optional_float(raw: Any) -> float | None:
         return None
     try:
         return float(raw)
-    except (TypeError, ValueError):
+    except TypeError, ValueError:
         return None
 
 

@@ -52,7 +52,7 @@ def _feet_inches_to_cm(height_str: str | None) -> float | None:
         feet = int(parts[0])
         inches = int(parts[1]) if len(parts) > 1 else 0
         return round((feet * 12 + inches) * 2.54, 1)
-    except (ValueError, IndexError):
+    except ValueError, IndexError:
         logger.warning("Cannot parse height string: %r", height_str)
         return None
 
