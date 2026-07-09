@@ -12,11 +12,19 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sse_starlette.sse import EventSourceResponse
 
 from backend.agent.context_events import detect_context_events
+from backend.agent.fallback import (
+    FallbackDecision,
+    WarningCode,
+    build_derived_metadata,
+    build_fallback,
+)
 from backend.agent.narrative_stream import generate_metadata, stream_summary
+from backend.agent.state import AgentState
 from backend.agent.state_builder import build_agent_state
 from backend.agent.trend_analysis import analyze_trends
 from backend.api.deps import get_db_session
 from backend.data import cache_postgres, cache_service
+from backend.schemas.narrative import PlayerNarrativeMetadata
 
 logger = logging.getLogger(__name__)
 
@@ -25,6 +33,29 @@ router = APIRouter()
 
 def _event(event: str, payload: dict[str, Any]) -> dict[str, str]:
     return {"event": event, "data": json.dumps(payload)}
+
+
+def _warning(code: WarningCode, **extra: Any) -> dict[str, str]:
+    return _event("warning", {"code": code, **extra})
+
+
+def _metadata_event(
+    metadata: PlayerNarrativeMetadata,
+    *,
+    cached: bool,
+    generated_at: datetime.datetime | None,
+) -> dict[str, str]:
+    return _event(
+        "metadata",
+        {
+            "trend_direction": metadata.trend_direction,
+            "confidence": metadata.confidence,
+            "generated_at": (
+                generated_at.isoformat() if generated_at is not None else None
+            ),
+            "cached": cached,
+        },
+    )
 
 
 async def _emit_cached(
@@ -52,7 +83,54 @@ async def _emit_no_games(full_name: str) -> AsyncIterator[dict[str, str]]:
     yield _event("token", {"text": text})
     yield _event(
         "metadata",
-        {"trend_direction": "stable", "confidence": 0.0, "cached": False},
+        {
+            "trend_direction": "stable",
+            "confidence": 0.0,
+            "generated_at": None,
+            "cached": False,
+        },
+    )
+    yield _event("done", {})
+
+
+async def _safe_fetch_cached(
+    session: AsyncSession, player_id: int, season: str
+) -> dict[str, Any] | None:
+    """Best-effort cache lookup for the fallback path.
+
+    A cache-lookup failure during fallback must not fail the client — we
+    still owe them a static message, and that path requires no I/O.
+    """
+    try:
+        return await cache_postgres.get_narrative(session, player_id, season)
+    except Exception:
+        logger.exception("Fallback cache lookup failed")
+        return None
+
+
+async def _emit_full_fallback(
+    session: AsyncSession,
+    state: AgentState,
+    player_id: int,
+    season: str,
+) -> AsyncIterator[dict[str, str]]:
+    """Emit the pre-stream fallback path — nothing has been sent yet."""
+    cached = await _safe_fetch_cached(session, player_id, season)
+    decision: FallbackDecision = build_fallback(
+        profile=state["profile"],
+        cached=cached,
+        trend_analysis=state.get("trend_analysis"),
+        games_played=state["stats"].games_played,
+    )
+    warning_payload: dict[str, Any] = {}
+    if decision.generated_at is not None:
+        warning_payload["generated_at"] = decision.generated_at.isoformat()
+    yield _warning(decision.warning_code, **warning_payload)
+    yield _event("token", {"text": decision.summary})
+    yield _metadata_event(
+        decision.metadata,
+        cached=decision.warning_code == "cached_fallback",
+        generated_at=decision.generated_at,
     )
     yield _event("done", {})
 
@@ -81,52 +159,65 @@ async def _generate_and_stream(
         # Client disconnected mid-stream — do not persist a truncated
         # summary and let the runtime finish cleanup normally.
         raise
-    except Exception as exc:
+    except Exception:
         logger.exception("LLM streaming failed for player=%d", player_id)
-        yield _event("error", {"code": "llm_error", "message": str(exc)})
+        if not accumulated:
+            # Nothing shipped yet — switch to the full fallback path.
+            async for evt in _emit_full_fallback(
+                session, state, player_id, season
+            ):
+                yield evt
+            return
+        # Tokens already reached the client — do not splice a second
+        # narrative on top. Signal interruption and close.
+        yield _warning("stream_interrupted")
+        yield _event("done", {})
         return
 
     summary = "".join(accumulated).strip()
     if not summary:
-        yield _event(
-            "error",
-            {"code": "empty_summary", "message": "Model returned no content"},
-        )
+        # LLM produced no content at all — treat as a pre-stream failure.
+        async for evt in _emit_full_fallback(
+            session, state, player_id, season
+        ):
+            yield evt
         return
 
     try:
         metadata = await generate_metadata(state, summary)
-    except Exception as exc:
+        derived = False
+    except Exception:
         logger.exception(
             "Metadata classification failed for player=%d", player_id
         )
-        yield _event("error", {"code": "metadata_error", "message": str(exc)})
-        return
-
-    try:
-        await cache_postgres.upsert_narrative(
-            session,
-            player_id,
-            season,
-            summary=summary,
-            trend_direction=metadata.trend_direction,
-            confidence=metadata.confidence,
+        metadata = build_derived_metadata(
+            state.get("trend_analysis"), state["stats"].games_played
         )
-    except Exception:
-        # Narrative is already streamed to the client; a persistence
-        # failure should not surface as a user-facing error.
-        logger.exception("Failed to persist narrative for player=%d", player_id)
+        derived = True
 
-    yield _event(
-        "metadata",
-        {
-            "trend_direction": metadata.trend_direction,
-            "confidence": metadata.confidence,
-            "generated_at": datetime.datetime.now(
-                tz=datetime.timezone.utc
-            ).isoformat(),
-            "cached": False,
-        },
+    if derived:
+        yield _warning("derived_metadata")
+    else:
+        try:
+            await cache_postgres.upsert_narrative(
+                session,
+                player_id,
+                season,
+                summary=summary,
+                trend_direction=metadata.trend_direction,
+                confidence=metadata.confidence,
+            )
+        except Exception:
+            # Narrative is already streamed to the client; a persistence
+            # failure should not surface as a user-facing error.
+            logger.exception(
+                "Failed to persist narrative for player=%d", player_id
+            )
+
+    yield _metadata_event(
+        metadata,
+        cached=False,
+        generated_at=datetime.datetime.now(tz=datetime.timezone.utc),
     )
     yield _event("done", {})
 
@@ -153,9 +244,11 @@ async def stream_player_narrative(
 ) -> EventSourceResponse:
     """Stream the AI narrative as Server-Sent Events.
 
-    Event sequence: N × ``token`` → ``metadata`` → ``done``, or a single
-    ``error`` on failure. ``ping=15`` sends keepalive comments so idle
-    proxies do not close the connection.
+    Event sequence: N × ``token`` → ``metadata`` → ``done``. Degraded paths
+    emit a ``warning`` event before the fallback ``token``/``metadata`` or
+    before an early ``done`` when the stream was already partway through.
+    ``ping=15`` sends keepalive comments so idle proxies do not close the
+    connection.
     """
     return EventSourceResponse(
         _narrative_stream(session, player_id, season, draft_year),
