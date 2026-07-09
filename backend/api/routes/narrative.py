@@ -98,8 +98,8 @@ async def _safe_fetch_cached(
 ) -> dict[str, Any] | None:
     """Best-effort cache lookup for the fallback path.
 
-    A cache-lookup failure during fallback must not fail the client — we
-    still owe them a static message, and that path requires no I/O.
+    A cache-lookup failure during fallback must not fail the client — we still
+    owe them a static message, and that path requires no I/O.
     """
     try:
         return await cache_postgres.get_narrative(session, player_id, season)
@@ -177,9 +177,7 @@ async def _generate_and_stream(
     summary = "".join(accumulated).strip()
     if not summary:
         # LLM produced no content at all — treat as a pre-stream failure.
-        async for evt in _emit_full_fallback(
-            session, state, player_id, season
-        ):
+        async for evt in _emit_full_fallback(session, state, player_id, season):
             yield evt
         return
 
