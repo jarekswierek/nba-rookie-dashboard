@@ -23,12 +23,24 @@ from backend.agent.state import AgentState
 from backend.agent.state_builder import build_agent_state
 from backend.agent.trend_analysis import analyze_trends
 from backend.api.deps import get_db_session
+from backend.core.consts import DRAFT_YEAR_MIN, SEASON_PATTERN
 from backend.data import cache_postgres, cache_service
 from backend.schemas.narrative import PlayerNarrativeMetadata
 
 logger = logging.getLogger(__name__)
 
 router = APIRouter()
+
+# Interval in seconds between SSE keepalive comments — long enough to avoid
+# noise, short enough to keep intermediate proxies from closing idle
+# connections (nginx defaults to ~60s).
+_KEEPALIVE_INTERVAL_SECONDS = 15
+
+# Fixed narrative payload for players with zero games played this season.
+# Both fields are constants because the "no games" narrative is a
+# deterministic short-circuit, not an LLM-generated result.
+_NO_GAMES_DIRECTION = "stable"
+_NO_GAMES_CONFIDENCE = 0.0
 
 
 def _event(event: str, payload: dict[str, Any]) -> dict[str, str]:
@@ -84,8 +96,8 @@ async def _emit_no_games(full_name: str) -> AsyncIterator[dict[str, str]]:
     yield _event(
         "metadata",
         {
-            "trend_direction": "stable",
-            "confidence": 0.0,
+            "trend_direction": _NO_GAMES_DIRECTION,
+            "confidence": _NO_GAMES_CONFIDENCE,
             "generated_at": None,
             "cached": False,
         },
@@ -236,8 +248,8 @@ async def _narrative_stream(
 @router.get("/{player_id}/narrative")
 async def stream_player_narrative(
     player_id: int = Path(..., gt=0),
-    season: str = Query(..., pattern=r"^\d{4}-\d{2}$"),
-    draft_year: int = Query(..., ge=2000),
+    season: str = Query(..., pattern=SEASON_PATTERN),
+    draft_year: int = Query(..., ge=DRAFT_YEAR_MIN),
     session: AsyncSession = Depends(get_db_session),
 ) -> EventSourceResponse:
     """Stream the AI narrative as Server-Sent Events.
@@ -245,10 +257,9 @@ async def stream_player_narrative(
     Event sequence: N × ``token`` → ``metadata`` → ``done``. Degraded paths
     emit a ``warning`` event before the fallback ``token``/``metadata`` or
     before an early ``done`` when the stream was already partway through.
-    ``ping=15`` sends keepalive comments so idle proxies do not close the
-    connection.
+    Keepalive comments prevent idle proxies from closing the connection.
     """
     return EventSourceResponse(
         _narrative_stream(session, player_id, season, draft_year),
-        ping=15,
+        ping=_KEEPALIVE_INTERVAL_SECONDS,
     )

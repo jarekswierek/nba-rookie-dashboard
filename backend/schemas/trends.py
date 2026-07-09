@@ -1,18 +1,23 @@
 """Trend signal schemas produced by the analyze_trends node."""
 
-from typing import Literal
-
 from pydantic import BaseModel
+
+from backend.core.types import (
+    StatName,
+    TrendDirection,
+    TrendStrength,
+    WindowSize,
+)
 
 
 class TrendSignal(BaseModel):
     """One trend on one stat over one rolling window, ready for prompting."""
 
-    stat: Literal["pts", "ast", "reb", "fg_pct", "fg3_pct", "min"]
-    window: Literal[5, 10, 15]
-    direction: Literal["up", "down", "stable"]
+    stat: StatName
+    window: WindowSize
+    direction: TrendDirection
     delta: float
-    strength: Literal["strong", "moderate", "weak"]
+    strength: TrendStrength
     display: str
     rank: int
 

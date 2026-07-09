@@ -5,15 +5,14 @@ Adding a stat where up is bad (e.g. turnovers) would require inverting the
 direction-to-goodness mapping when building ``display`` strings.
 """
 
-from typing import Literal, cast
+from typing import cast
 
+from backend.core.types import StatName, TrendStrength, WindowSize
 from backend.schemas.stats import AggregatedStats, RollingWindow, StatWindows
 from backend.schemas.trends import TrendAnalysis, TrendSignal
 
-_StatName = Literal["pts", "ast", "reb", "fg_pct", "fg3_pct", "min"]
-
 # Order also drives tie-breaking in ranking — headline stats first.
-_STAT_PRIORITY: tuple[_StatName, ...] = (
+_STAT_PRIORITY: tuple[StatName, ...] = (
     "pts",
     "fg3_pct",
     "ast",
@@ -31,7 +30,7 @@ _MIN_WINDOW_FILL_RATIO = 0.6
 # For percentages (fg_pct/fg3_pct) the metric is absolute percentage points,
 # because a 25% relative move on a 35% shooter is unusually rare and would
 # always classify as weak under a ratio rule.
-_STRENGTH_THRESHOLDS: dict[_StatName, tuple[float, float]] = {
+_STRENGTH_THRESHOLDS: dict[StatName, tuple[float, float]] = {
     "pts": (0.25, 0.10),
     "ast": (0.25, 0.10),
     "reb": (0.25, 0.10),
@@ -40,7 +39,7 @@ _STRENGTH_THRESHOLDS: dict[_StatName, tuple[float, float]] = {
     "fg3_pct": (0.06, 0.03),  # absolute pp
 }
 
-_DISPLAY_STAT_LABEL: dict[_StatName, str] = {
+_DISPLAY_STAT_LABEL: dict[StatName, str] = {
     "pts": "PTS",
     "ast": "AST",
     "reb": "REB",
@@ -52,7 +51,7 @@ _DISPLAY_STAT_LABEL: dict[_StatName, str] = {
 
 def _pick_window(
     stat_windows: StatWindows,
-) -> tuple[Literal[5, 10, 15], RollingWindow] | None:
+) -> tuple[WindowSize, RollingWindow] | None:
     """Return the longest window that meets the fill-ratio threshold."""
     for size, window in (
         (15, stat_windows.w15),
@@ -62,13 +61,13 @@ def _pick_window(
         if window.avg is None:
             continue
         if window.games_played >= size * _MIN_WINDOW_FILL_RATIO:
-            return cast(Literal[5, 10, 15], size), window
+            return cast(WindowSize, size), window
     return None
 
 
 def _classify_strength(
-    stat: _StatName, delta: float, season_avg: float | None
-) -> Literal["strong", "moderate", "weak"]:
+    stat: StatName, delta: float, season_avg: float | None
+) -> TrendStrength:
     """Bucket delta size relative to per-stat calibration."""
     strong_threshold, moderate_threshold = _STRENGTH_THRESHOLDS[stat]
 
@@ -86,9 +85,7 @@ def _classify_strength(
     return "weak"
 
 
-def _format_display(
-    stat: _StatName, window: Literal[5, 10, 15], delta: float
-) -> str:
+def _format_display(stat: StatName, window: WindowSize, delta: float) -> str:
     """Build the prompt-ready delta string, e.g. '+3.4 PTS last 10G'.
 
     Percentages are rendered as absolute percentage points (``+3.4pp``) to
@@ -110,8 +107,8 @@ def _rank_key(signal: TrendSignal) -> tuple[int, float, int]:
 
 
 def _build_signal(
-    stat: _StatName,
-    window: Literal[5, 10, 15],
+    stat: StatName,
+    window: WindowSize,
     rolling: RollingWindow,
     season_avg: float | None,
 ) -> TrendSignal:
@@ -142,11 +139,11 @@ def _summary(signals: list[TrendSignal]) -> str:
     return ", ".join(parts)
 
 
-def _stat_windows_for(stats: AggregatedStats, name: _StatName) -> StatWindows:
+def _stat_windows_for(stats: AggregatedStats, name: StatName) -> StatWindows:
     return cast(StatWindows, getattr(stats, name))
 
 
-def _season_avg_for(stats: AggregatedStats, name: _StatName) -> float | None:
+def _season_avg_for(stats: AggregatedStats, name: StatName) -> float | None:
     return cast("float | None", getattr(stats, f"{name}_season_avg"))
 
 

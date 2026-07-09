@@ -10,10 +10,10 @@ noise.
 import datetime
 import logging
 from statistics import fmean
-from typing import Literal
 
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from backend.core.types import TrendDirection
 from backend.data.game_log_service import get_game_logs
 from backend.schemas.stats import (
     AggregatedStats,
@@ -37,9 +37,7 @@ _DELTA_THRESHOLDS: dict[str, float] = {
 }
 
 
-def _compute_direction(
-    delta: float | None, stat_name: str
-) -> Literal["up", "down", "stable"]:
+def _compute_direction(delta: float | None, stat_name: str) -> TrendDirection:
     """Classify *delta* against the per-stat dead-band.
 
     A missing delta reports "stable"; dead-band absorbs single-game noise that

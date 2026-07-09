@@ -1,10 +1,10 @@
 """Pydantic schemas for player statistics data."""
 
 import datetime
-from typing import Literal
 
 from pydantic import BaseModel, computed_field
 
+from backend.core.types import TrendDirection
 from backend.schemas.gaps import GapEvent
 
 
@@ -53,7 +53,7 @@ class RollingWindow(BaseModel):
     window_size: int
     avg: float | None
     delta: float | None
-    direction: Literal["up", "down", "stable"]
+    direction: TrendDirection
     games_played: int
 
 

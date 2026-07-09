@@ -1,8 +1,8 @@
 """LLM-generated narrative schema."""
 
-from typing import Literal
-
 from pydantic import BaseModel, Field
+
+from backend.core.types import TrendDirection
 
 
 class PlayerNarrative(BaseModel):
@@ -13,7 +13,7 @@ class PlayerNarrative(BaseModel):
     """
 
     summary: str = Field(..., min_length=1, max_length=800)
-    trend_direction: Literal["up", "down", "stable"]
+    trend_direction: TrendDirection
     confidence: float = Field(..., ge=0.0, le=1.0)
 
 
@@ -24,5 +24,5 @@ class PlayerNarrativeMetadata(BaseModel):
     trend/confidence classification is generated in a follow-up structured call.
     """
 
-    trend_direction: Literal["up", "down", "stable"]
+    trend_direction: TrendDirection
     confidence: float = Field(..., ge=0.0, le=1.0)

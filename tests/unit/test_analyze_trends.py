@@ -1,10 +1,9 @@
 """Unit tests for analyze_trends pure function."""
 
-from typing import Literal
-
 import pytest
 
 from backend.agent.trend_analysis import analyze_trends
+from backend.core.types import TrendDirection
 from backend.schemas.stats import AggregatedStats, RollingWindow, StatWindows
 
 
@@ -13,7 +12,7 @@ def _rw(
     window_size: int = 5,
     avg: float | None = 20.0,
     delta: float | None = 0.0,
-    direction: Literal["up", "down", "stable"] = "stable",
+    direction: TrendDirection = "stable",
     games_played: int = 5,
 ) -> RollingWindow:
     return RollingWindow(

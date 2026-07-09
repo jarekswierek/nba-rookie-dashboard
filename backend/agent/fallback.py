@@ -11,6 +11,7 @@ from typing import Any, Literal
 
 from pydantic import BaseModel
 
+from backend.core.types import TrendDirection
 from backend.schemas.narrative import PlayerNarrativeMetadata
 from backend.schemas.stats import PlayerProfile
 
@@ -20,6 +21,13 @@ WarningCode = Literal[
     "derived_metadata",
     "stream_interrupted",
 ]
+
+# Derived-confidence bounds. Starts at the floor (a single game already
+# tells us something), grows by _STEP per additional game, and never
+# claims LLM-level certainty — the ceiling stays below 1.0.
+_CONFIDENCE_FLOOR = 0.5
+_CONFIDENCE_STEP_PER_GAME = 0.02
+_CONFIDENCE_CEILING = 0.9
 
 
 class FallbackDecision(BaseModel):
@@ -33,7 +41,7 @@ class FallbackDecision(BaseModel):
 
 def _majority_direction(
     trend_analysis: dict[str, Any] | None,
-) -> Literal["up", "down", "stable"]:
+) -> TrendDirection:
     """Return the dominant non-stable direction across trend signals.
 
     Ties or absent signals fall back to ``"stable"`` — we would rather be silent
@@ -52,12 +60,15 @@ def _majority_direction(
 
 
 def _confidence_from_games_played(games_played: int) -> float:
-    """Cap confidence at 0.9 when derived without an LLM assessment.
+    """Return a bounded confidence derived from sample size alone.
 
-    Bounded so a deterministic fallback never claims LLM-level certainty; starts
-    at 0.5 (one game already tells us something) and grows slowly.
+    Deliberately capped below 1.0 so a deterministic fallback never claims LLM-
+    level certainty.
     """
-    return min(0.5 + games_played * 0.02, 0.9)
+    return min(
+        _CONFIDENCE_FLOOR + games_played * _CONFIDENCE_STEP_PER_GAME,
+        _CONFIDENCE_CEILING,
+    )
 
 
 def build_derived_metadata(

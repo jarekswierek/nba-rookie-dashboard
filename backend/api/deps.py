@@ -11,13 +11,12 @@ from sqlalchemy.ext.asyncio import (
 )
 
 from backend.core.config import get_settings
+from backend.core.consts import DRAFT_YEAR_MIN
 
 _engine = create_async_engine(get_settings().database_url, pool_pre_ping=True)
 _session_factory: async_sessionmaker[AsyncSession] = async_sessionmaker(
     _engine, expire_on_commit=False
 )
-
-_DRAFT_YEAR_MIN = 2000
 
 
 async def get_db_session() -> AsyncGenerator[AsyncSession, None]:
@@ -28,7 +27,7 @@ async def get_db_session() -> AsyncGenerator[AsyncSession, None]:
 
 
 async def valid_draft_year(
-    year: int = Path(..., ge=_DRAFT_YEAR_MIN),
+    year: int = Path(..., ge=DRAFT_YEAR_MIN),
 ) -> int:
     """Validate that *year* is within the allowed draft year range."""
     current_year = datetime.date.today().year
@@ -37,7 +36,7 @@ async def valid_draft_year(
             status_code=422,
             detail=(
                 f"Draft year {year} is in the future. "
-                f"Valid range: {_DRAFT_YEAR_MIN}–{current_year}."
+                f"Valid range: {DRAFT_YEAR_MIN}–{current_year}."
             ),
         )
     return year
