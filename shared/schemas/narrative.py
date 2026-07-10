@@ -2,7 +2,7 @@
 
 from pydantic import BaseModel, Field
 
-from backend.core.types import TrendDirection
+from shared.types import TrendDirection
 
 
 class PlayerNarrative(BaseModel):

@@ -1,18 +1,15 @@
 """Unit tests for detect_context node (pure logic)."""
 
 import datetime
-from typing import Literal
-
-import pytest
 
 from backend.agent.context_events import detect_context_events
-from backend.schemas.context import (
+from shared.schemas.context import (
     CurrentlyAbsent,
     ExtendedAbsence,
     ReturnFromAbsence,
 )
-from backend.schemas.gaps import GapEvent
-from backend.schemas.stats import AggregatedStats, RollingWindow, StatWindows
+from shared.schemas.gaps import GapEvent
+from shared.schemas.stats import AggregatedStats, RollingWindow, StatWindows
 
 
 def _empty_window() -> RollingWindow:

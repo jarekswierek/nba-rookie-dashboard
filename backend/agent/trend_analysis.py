@@ -7,9 +7,9 @@ direction-to-goodness mapping when building ``display`` strings.
 
 from typing import cast
 
-from backend.core.types import StatName, TrendStrength, WindowSize
-from backend.schemas.stats import AggregatedStats, RollingWindow, StatWindows
-from backend.schemas.trends import TrendAnalysis, TrendSignal
+from shared.schemas.stats import AggregatedStats, RollingWindow, StatWindows
+from shared.schemas.trends import TrendAnalysis, TrendSignal
+from shared.types import StatName, TrendStrength, WindowSize
 
 # Order also drives tie-breaking in ranking — headline stats first.
 _STAT_PRIORITY: tuple[StatName, ...] = (

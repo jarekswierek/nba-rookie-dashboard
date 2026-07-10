@@ -5,7 +5,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from backend.api.deps import get_db_session, valid_draft_year
 from backend.data.draft_service import get_draft_class_with_bio
-from backend.schemas.draft import DraftClass
+from shared.schemas.draft import DraftClass
 
 router = APIRouter()
 

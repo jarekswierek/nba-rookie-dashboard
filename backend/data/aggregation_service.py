@@ -13,14 +13,14 @@ from statistics import fmean
 
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from backend.core.types import TrendDirection
 from backend.data.game_log_service import get_game_logs
-from backend.schemas.stats import (
+from shared.schemas.stats import (
     AggregatedStats,
     GameLog,
     RollingWindow,
     StatWindows,
 )
+from shared.types import TrendDirection
 
 logger = logging.getLogger(__name__)
 

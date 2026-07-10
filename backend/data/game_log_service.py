@@ -9,7 +9,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from backend.data import cache_service
 from backend.data.models import PlayerGameLogs
-from backend.schemas.stats import GameLog
+from shared.schemas.stats import GameLog
 
 logger = logging.getLogger(__name__)
 

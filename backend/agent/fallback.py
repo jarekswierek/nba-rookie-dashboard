@@ -11,9 +11,9 @@ from typing import Any, Literal
 
 from pydantic import BaseModel
 
-from backend.core.types import TrendDirection
-from backend.schemas.narrative import PlayerNarrativeMetadata
-from backend.schemas.stats import PlayerProfile
+from shared.schemas.narrative import PlayerNarrativeMetadata
+from shared.schemas.stats import PlayerProfile
+from shared.types import TrendDirection
 
 WarningCode = Literal[
     "cached_fallback",

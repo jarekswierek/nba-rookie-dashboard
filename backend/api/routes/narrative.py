@@ -23,9 +23,9 @@ from backend.agent.state import AgentState
 from backend.agent.state_builder import build_agent_state
 from backend.agent.trend_analysis import analyze_trends
 from backend.api.deps import get_db_session
-from backend.core.consts import DRAFT_YEAR_MIN, SEASON_PATTERN
 from backend.data import cache_postgres, cache_service
-from backend.schemas.narrative import PlayerNarrativeMetadata
+from shared.consts import DRAFT_YEAR_MIN, SEASON_PATTERN
+from shared.schemas.narrative import PlayerNarrativeMetadata
 
 logger = logging.getLogger(__name__)
 

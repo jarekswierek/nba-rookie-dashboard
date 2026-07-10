@@ -13,7 +13,14 @@ COPY pyproject.toml poetry.lock* ./
 RUN poetry config virtualenvs.create false \
     && poetry install --only main --no-interaction --no-ansi
 
+COPY shared/ ./shared/
 COPY frontend/ ./frontend/
+
+# Streamlit runs the script with the script's directory on sys.path;
+# adding /app lets `from frontend.views.sidebar import ...` and
+# `from shared.schemas.draft import ...` resolve instead of blowing
+# up with ModuleNotFoundError.
+ENV PYTHONPATH=/app
 
 EXPOSE 8501
 

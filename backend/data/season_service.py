@@ -2,7 +2,7 @@
 
 from backend.data import cache_redis, nba_client
 from backend.data.season_detector import detect_current_season
-from backend.schemas.season import SeasonStatus
+from shared.schemas.season import SeasonStatus
 
 
 async def get_season_status() -> SeasonStatus:

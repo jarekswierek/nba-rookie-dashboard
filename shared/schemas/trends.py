@@ -2,7 +2,7 @@
 
 from pydantic import BaseModel
 
-from backend.core.types import (
+from shared.types import (
     StatName,
     TrendDirection,
     TrendStrength,

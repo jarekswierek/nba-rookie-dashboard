@@ -5,15 +5,15 @@ return from an absence 40 games ago is no longer context for current form. Older
 gaps still emit ExtendedAbsence when long enough.
 """
 
-from backend.schemas.context import (
+from shared.schemas.context import (
     ContextEvent,
     ContextEventList,
     CurrentlyAbsent,
     ExtendedAbsence,
     ReturnFromAbsence,
 )
-from backend.schemas.gaps import GapEvent
-from backend.schemas.stats import AggregatedStats
+from shared.schemas.gaps import GapEvent
+from shared.schemas.stats import AggregatedStats
 
 # Gap length at or above which we surface an ExtendedAbsence event.
 _EXTENDED_ABSENCE_THRESHOLD = 5

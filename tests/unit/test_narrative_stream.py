@@ -12,8 +12,8 @@ from langchain_core.messages import AIMessageChunk
 
 from backend.agent.narrative_stream import generate_metadata, stream_summary
 from backend.agent.state import AgentState
-from backend.schemas.narrative import PlayerNarrativeMetadata
-from backend.schemas.stats import (
+from shared.schemas.narrative import PlayerNarrativeMetadata
+from shared.schemas.stats import (
     AggregatedStats,
     PlayerProfile,
     RollingWindow,

@@ -8,7 +8,7 @@ from backend.data.aggregation_service import (
     _compute_direction,
     aggregate_stats,
 )
-from backend.schemas.stats import GameLog
+from shared.schemas.stats import GameLog
 
 _SEASON = "2024-25"
 _PLAYER_ID = 12345

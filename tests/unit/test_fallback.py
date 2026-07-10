@@ -8,7 +8,7 @@ from backend.agent.fallback import (
     build_derived_metadata,
     build_fallback,
 )
-from backend.schemas.stats import PlayerProfile
+from shared.schemas.stats import PlayerProfile
 
 
 def _profile(full_name: str = "Test Rookie") -> PlayerProfile:

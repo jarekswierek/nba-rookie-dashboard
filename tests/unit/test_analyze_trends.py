@@ -1,10 +1,9 @@
 """Unit tests for analyze_trends pure function."""
 
-import pytest
 
 from backend.agent.trend_analysis import analyze_trends
-from backend.core.types import TrendDirection
-from backend.schemas.stats import AggregatedStats, RollingWindow, StatWindows
+from shared.schemas.stats import AggregatedStats, RollingWindow, StatWindows
+from shared.types import TrendDirection
 
 
 def _rw(

@@ -11,7 +11,7 @@ from sqlalchemy.ext.asyncio import (
 )
 
 from backend.core.config import get_settings
-from backend.core.consts import DRAFT_YEAR_MIN
+from shared.consts import DRAFT_YEAR_MIN
 
 _engine = create_async_engine(get_settings().database_url, pool_pre_ping=True)
 _session_factory: async_sessionmaker[AsyncSession] = async_sessionmaker(

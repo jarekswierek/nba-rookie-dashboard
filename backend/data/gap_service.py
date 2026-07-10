@@ -11,8 +11,8 @@ import logging
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from backend.data.game_log_service import get_game_logs
-from backend.schemas.gaps import GapEvent
-from backend.schemas.stats import GameLog
+from shared.schemas.gaps import GapEvent
+from shared.schemas.stats import GameLog
 
 logger = logging.getLogger(__name__)
 

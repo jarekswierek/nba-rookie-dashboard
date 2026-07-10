@@ -4,11 +4,11 @@ from fastapi import APIRouter, Depends, Path, Query
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from backend.api.deps import get_db_session
-from backend.core.consts import SEASON_PATTERN
 from backend.data.aggregation_service import get_aggregated_stats
 from backend.data.game_log_service import get_game_logs
 from backend.data.gap_service import detect_gaps
-from backend.schemas.stats import AggregatedStatsResponse, GameLogsResponse
+from shared.consts import SEASON_PATTERN
+from shared.schemas.stats import AggregatedStatsResponse, GameLogsResponse
 
 router = APIRouter()
 

@@ -3,7 +3,7 @@
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from backend.data import cache_service
-from backend.schemas.stats import PlayerProfile
+from shared.schemas.stats import PlayerProfile
 
 
 async def get_player_profile(

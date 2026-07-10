@@ -6,12 +6,12 @@ from fastapi import APIRouter, Depends, Path
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from backend.api.deps import get_db_session
-from backend.core.consts import DRAFT_YEAR_MIN, SEASON_PATTERN
 from backend.data.season_averages_service import get_season_averages
 from backend.data.season_detector import current_season_year
 from backend.data.season_service import get_season_status
-from backend.schemas.season import DraftYearRange, SeasonStatus
-from backend.schemas.season_averages import SeasonAveragesResponse
+from shared.consts import DRAFT_YEAR_MIN, SEASON_PATTERN
+from shared.schemas.season import DraftYearRange, SeasonStatus
+from shared.schemas.season_averages import SeasonAveragesResponse
 
 router = APIRouter()
 

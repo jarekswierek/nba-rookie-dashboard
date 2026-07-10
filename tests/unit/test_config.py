@@ -9,7 +9,6 @@ from pydantic import ValidationError
 
 from backend.core.config import Settings, get_settings
 
-
 # ── Helpers ───────────────────────────────────────────────────────────────────
 
 def _make_settings(**overrides: str) -> Settings:

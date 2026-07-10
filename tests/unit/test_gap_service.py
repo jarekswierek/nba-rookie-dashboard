@@ -5,7 +5,7 @@ import datetime
 import pytest
 
 from backend.data.gap_service import detect_gaps
-from backend.schemas.stats import GameLog
+from shared.schemas.stats import GameLog
 
 
 def _log(game_number: int, *, is_dnp: bool = False) -> GameLog:

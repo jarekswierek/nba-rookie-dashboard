@@ -5,7 +5,7 @@ from typing import Any
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from backend.data import cache_service
-from backend.schemas.season_averages import (
+from shared.schemas.season_averages import (
     PlayerSeasonAverage,
     SeasonAveragesResponse,
 )

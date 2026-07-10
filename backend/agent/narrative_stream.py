@@ -28,8 +28,8 @@ from backend.agent.prompts.narrative import (
     SYSTEM_PROMPT,
 )
 from backend.agent.state import AgentState
-from backend.schemas.narrative import PlayerNarrativeMetadata
-from backend.schemas.stats import AggregatedStats
+from shared.schemas.narrative import PlayerNarrativeMetadata
+from shared.schemas.stats import AggregatedStats
 
 _STAT_LABELS: dict[str, str] = {
     "pts": "PTS",

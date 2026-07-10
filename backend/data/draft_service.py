@@ -4,7 +4,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from backend.data import cache_service
 from backend.data.season_detector import season_string
-from backend.schemas.draft import DraftClass, DraftPlayer
+from shared.schemas.draft import DraftClass, DraftPlayer
 
 
 async def get_draft_class_with_bio(

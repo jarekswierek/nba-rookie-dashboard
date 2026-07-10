@@ -3,10 +3,10 @@
 import httpx
 import streamlit as st
 
-from backend.schemas.draft import DraftClass, DraftPlayer
-from backend.schemas.season import DraftYearRange, SeasonStatus
-from backend.schemas.season_averages import SeasonAveragesResponse
 from frontend import api_client, state
+from shared.schemas.draft import DraftClass, DraftPlayer
+from shared.schemas.season import DraftYearRange, SeasonStatus
+from shared.schemas.season_averages import SeasonAveragesResponse
 
 _TTL_YEAR_RANGE_SECONDS = 3600
 _TTL_SEASON_STATUS_SECONDS = 60

@@ -4,8 +4,8 @@ import datetime
 
 from pydantic import BaseModel, computed_field
 
-from backend.core.types import TrendDirection
-from backend.schemas.gaps import GapEvent
+from shared.schemas.gaps import GapEvent
+from shared.types import TrendDirection
 
 
 class PlayerProfile(BaseModel):

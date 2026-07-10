@@ -8,8 +8,8 @@ the endpoint, not in nodes.
 
 from typing import Any, NotRequired, TypedDict
 
-from backend.schemas.gaps import GapEvent
-from backend.schemas.stats import AggregatedStats, PlayerProfile
+from shared.schemas.gaps import GapEvent
+from shared.schemas.stats import AggregatedStats, PlayerProfile
 
 
 class AgentState(TypedDict):

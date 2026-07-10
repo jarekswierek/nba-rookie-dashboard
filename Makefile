@@ -1,5 +1,5 @@
 .DEFAULT_GOAL := help
-SOURCES := backend/ frontend/
+SOURCES := shared/ backend/ frontend/
 
 # ── Help ─────────────────────────────────────────────────────────────────────
 
@@ -82,11 +82,13 @@ logs-api:
 .PHONY: format
 format:
 	-poetry run docformatter -r -i $(SOURCES)
+	poetry run ruff check --select I --fix $(SOURCES)
 	poetry run black $(SOURCES)
 
 .PHONY: format-check
 format-check:
 	-poetry run docformatter -r --check $(SOURCES)
+	poetry run ruff check --select I $(SOURCES)
 	poetry run black --check $(SOURCES)
 
 # ── Quality ──────────────────────────────────────────────────────────────────

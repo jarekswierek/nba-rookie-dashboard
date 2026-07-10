@@ -10,9 +10,9 @@ from functools import lru_cache
 
 import httpx
 
-from backend.schemas.draft import DraftClass
-from backend.schemas.season import DraftYearRange, SeasonStatus
-from backend.schemas.season_averages import SeasonAveragesResponse
+from shared.schemas.draft import DraftClass
+from shared.schemas.season import DraftYearRange, SeasonStatus
+from shared.schemas.season_averages import SeasonAveragesResponse
 
 # Base URL of the FastAPI backend. Defaults to the Docker Compose service
 # name; override via env for host-network dev or a deployed backend.

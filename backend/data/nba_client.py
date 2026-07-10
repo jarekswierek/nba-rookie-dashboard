@@ -153,7 +153,7 @@ async def fetch_league_dash_stats(season: str) -> pd.DataFrame:
         _run_endpoint,
         leaguedashplayerstats.LeagueDashPlayerStats,
         season=season,
-        per_mode_simple="PerGame",
+        per_mode_detailed="PerGame",
     )
 
 

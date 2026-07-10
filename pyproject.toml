@@ -5,6 +5,7 @@ description = "NBA Rookie Dashboard — AI-powered stats visualizer with narrati
 authors = ["jarekswierek <jaroslaw.swierek@gmail.com>"]
 readme = "README.md"
 packages = [
+    { include = "shared" },
     { include = "backend" },
     { include = "frontend" },
 ]
