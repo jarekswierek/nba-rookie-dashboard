@@ -2,6 +2,8 @@
 
 import streamlit as st
 
+from frontend.views.sidebar import render_sidebar
+
 _PAGE_TITLE = "NBA Rookie Dashboard"
 _PAGE_ICON = "🏀"
 
@@ -10,13 +12,6 @@ st.set_page_config(
     page_icon=_PAGE_ICON,
     layout="wide",
 )
-
-
-def _render_sidebar() -> None:
-    """Draft class selector and player picker — placeholder until wired."""
-    with st.sidebar:
-        st.header("Draft Class")
-        st.caption("Season and player selection coming soon.")
 
 
 def _render_main() -> None:
@@ -30,7 +25,7 @@ def _render_main() -> None:
 
 
 def main() -> None:
-    _render_sidebar()
+    render_sidebar()
     _render_main()
 
 

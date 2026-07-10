@@ -12,6 +12,7 @@ import httpx
 
 from backend.schemas.draft import DraftClass
 from backend.schemas.season import DraftYearRange, SeasonStatus
+from backend.schemas.season_averages import SeasonAveragesResponse
 
 # Base URL of the FastAPI backend. Defaults to the Docker Compose service
 # name; override via env for host-network dev or a deployed backend.
@@ -56,3 +57,10 @@ def get_draft_class(year: int) -> DraftClass:
     response = _client().get(f"/api/draft/{year}/players")
     response.raise_for_status()
     return DraftClass.model_validate(response.json())
+
+
+def get_season_averages(season: str) -> SeasonAveragesResponse:
+    """Return league-wide per-player season averages for *season*."""
+    response = _client().get(f"/api/season/{season}/averages")
+    response.raise_for_status()
+    return SeasonAveragesResponse.model_validate(response.json())
