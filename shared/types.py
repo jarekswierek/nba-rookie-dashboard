@@ -21,3 +21,11 @@ WindowSize = Literal[5, 10, 15]
 
 TrendStrength = Literal["strong", "moderate", "weak"]
 """Categorical magnitude classification for a single trend signal."""
+
+NarrativeWarningCode = Literal[
+    "cached_fallback",
+    "unavailable",
+    "derived_metadata",
+    "stream_interrupted",
+]
+"""Warning codes emitted by the SSE narrative endpoint on degraded paths."""

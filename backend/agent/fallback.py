@@ -15,13 +15,6 @@ from shared.schemas.narrative import PlayerNarrativeMetadata
 from shared.schemas.stats import PlayerProfile
 from shared.types import TrendDirection
 
-WarningCode = Literal[
-    "cached_fallback",
-    "unavailable",
-    "derived_metadata",
-    "stream_interrupted",
-]
-
 # Derived-confidence bounds. Starts at the floor (a single game already
 # tells us something), grows by _STEP per additional game, and never
 # claims LLM-level certainty — the ceiling stays below 1.0.

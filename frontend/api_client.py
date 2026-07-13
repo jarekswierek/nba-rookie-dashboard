@@ -6,10 +6,12 @@ across Streamlit reruns.
 """
 
 import os
+from collections.abc import Iterator
 from functools import lru_cache
 
 import httpx
 
+from frontend.sse import SSEEvent, iter_sse_events
 from shared.schemas.draft import DraftClass
 from shared.schemas.season import DraftYearRange, SeasonStatus
 from shared.schemas.season_averages import SeasonAveragesResponse
@@ -75,3 +77,14 @@ def get_aggregated_stats(player_id: int, season: str) -> AggregatedStatsResponse
     )
     response.raise_for_status()
     return AggregatedStatsResponse.model_validate(response.json())
+
+
+def stream_narrative(
+    player_id: int, season: str, draft_year: int
+) -> Iterator[SSEEvent]:
+    """Yield SSE events (token/metadata/warning/done) for the player's
+    narrative."""
+    return iter_sse_events(
+        f"/api/players/{player_id}/narrative",
+        params={"season": season, "draft_year": draft_year},
+    )

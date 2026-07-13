@@ -14,7 +14,6 @@ from sse_starlette.sse import EventSourceResponse
 from backend.agent.context_events import detect_context_events
 from backend.agent.fallback import (
     FallbackDecision,
-    WarningCode,
     build_derived_metadata,
     build_fallback,
 )
@@ -26,6 +25,7 @@ from backend.api.deps import get_db_session
 from backend.data import cache_postgres, cache_service
 from shared.consts import DRAFT_YEAR_MIN, SEASON_PATTERN
 from shared.schemas.narrative import PlayerNarrativeMetadata
+from shared.types import NarrativeWarningCode
 
 logger = logging.getLogger(__name__)
 
@@ -47,7 +47,7 @@ def _event(event: str, payload: dict[str, Any]) -> dict[str, str]:
     return {"event": event, "data": json.dumps(payload)}
 
 
-def _warning(code: WarningCode, **extra: Any) -> dict[str, str]:
+def _warning(code: NarrativeWarningCode, **extra: Any) -> dict[str, str]:
     return _event("warning", {"code": code, **extra})
 
 

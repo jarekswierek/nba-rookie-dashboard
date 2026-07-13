@@ -18,6 +18,7 @@ from frontend.formatting import (
     fmt_pct_value,
     fmt_value,
 )
+from frontend.views.narrative import render_narrative_panel
 from shared.schemas.draft import DraftPlayer
 from shared.schemas.stats import AggregatedStats
 
@@ -129,3 +130,4 @@ def render_player_view(player_id: int, season: str, year: int) -> None:
     _render_bio_row(profile, season)
     _render_metrics_row(agg.stats)
     st.divider()
+    render_narrative_panel(player_id, season, year)
