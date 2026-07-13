@@ -16,7 +16,6 @@ def _make_settings(**overrides: str) -> Settings:
     base: dict[str, str] = {
         "postgres_password": "secret",
         "anthropic_api_key": "sk-ant-test",
-        "langchain_api_key": "ls__test",
     }
     base.update(overrides)
     return Settings(_env_file=None, **base)  # type: ignore[call-arg]
@@ -35,21 +34,14 @@ class TestSettingsValidation:
     ) -> None:
         monkeypatch.delenv("POSTGRES_PASSWORD", raising=False)
         with pytest.raises(ValidationError):
-            Settings(_env_file=None, anthropic_api_key="sk-ant-test", langchain_api_key="ls__test")  # type: ignore[call-arg]
+            Settings(_env_file=None, anthropic_api_key="sk-ant-test")  # type: ignore[call-arg]
 
     def test_missing_anthropic_key_raises(
         self, monkeypatch: pytest.MonkeyPatch
     ) -> None:
         monkeypatch.delenv("ANTHROPIC_API_KEY", raising=False)
         with pytest.raises(ValidationError):
-            Settings(_env_file=None, postgres_password="secret", langchain_api_key="ls__test")  # type: ignore[call-arg]
-
-    def test_missing_langchain_key_raises(
-        self, monkeypatch: pytest.MonkeyPatch
-    ) -> None:
-        monkeypatch.delenv("LANGCHAIN_API_KEY", raising=False)
-        with pytest.raises(ValidationError):
-            Settings(_env_file=None, postgres_password="secret", anthropic_api_key="sk-ant-test")  # type: ignore[call-arg]
+            Settings(_env_file=None, postgres_password="secret")  # type: ignore[call-arg]
 
     def test_invalid_app_env_raises(self) -> None:
         with pytest.raises(ValidationError):
@@ -78,8 +70,6 @@ class TestGetSettings:
         get_settings.cache_clear()
         monkeypatch.setenv("POSTGRES_PASSWORD", "pw")
         monkeypatch.setenv("ANTHROPIC_API_KEY", "sk-ant-test")
-        monkeypatch.setenv("LANGCHAIN_API_KEY", "ls__test")
-        monkeypatch.delenv("LANGCHAIN_TRACING_V2", raising=False)
 
         s1 = get_settings()
         s2 = get_settings()
