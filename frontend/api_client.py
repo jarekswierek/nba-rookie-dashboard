@@ -13,6 +13,7 @@ import httpx
 from shared.schemas.draft import DraftClass
 from shared.schemas.season import DraftYearRange, SeasonStatus
 from shared.schemas.season_averages import SeasonAveragesResponse
+from shared.schemas.stats import AggregatedStatsResponse
 
 # Base URL of the FastAPI backend. Defaults to the Docker Compose service
 # name; override via env for host-network dev or a deployed backend.
@@ -64,3 +65,13 @@ def get_season_averages(season: str) -> SeasonAveragesResponse:
     response = _client().get(f"/api/season/{season}/averages")
     response.raise_for_status()
     return SeasonAveragesResponse.model_validate(response.json())
+
+
+def get_aggregated_stats(player_id: int, season: str) -> AggregatedStatsResponse:
+    """Return rolling windows and season aggregates for *player_id*."""
+    response = _client().get(
+        f"/api/players/{player_id}/aggregated-stats",
+        params={"season": season},
+    )
+    response.raise_for_status()
+    return AggregatedStatsResponse.model_validate(response.json())

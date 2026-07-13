@@ -3,43 +3,15 @@
 import httpx
 import streamlit as st
 
-from frontend import api_client, state
+from frontend import cache, state
+from frontend.formatting import season_string
 from shared.schemas.draft import DraftClass, DraftPlayer
 from shared.schemas.season import DraftYearRange, SeasonStatus
 from shared.schemas.season_averages import SeasonAveragesResponse
 
-_TTL_YEAR_RANGE_SECONDS = 3600
-_TTL_SEASON_STATUS_SECONDS = 60
-_TTL_DRAFT_CLASS_SECONDS = 300
-_TTL_SEASON_AVERAGES_SECONDS = 300
-
-
-@st.cache_data(ttl=_TTL_YEAR_RANGE_SECONDS)
-def _cached_year_range() -> DraftYearRange:
-    return api_client.get_draft_year_range()
-
-
-@st.cache_data(ttl=_TTL_SEASON_STATUS_SECONDS)
-def _cached_season_status() -> SeasonStatus:
-    return api_client.get_season_status()
-
-
-@st.cache_data(ttl=_TTL_DRAFT_CLASS_SECONDS)
-def _cached_draft_class(year: int) -> DraftClass:
-    return api_client.get_draft_class(year)
-
-
-@st.cache_data(ttl=_TTL_SEASON_AVERAGES_SECONDS)
-def _cached_season_averages(season: str) -> SeasonAveragesResponse:
-    return api_client.get_season_averages(season)
-
-
-def _season_string(year: int) -> str:
-    return f"{year}-{str(year + 1)[-2:]}"
-
 
 def _format_year(year: int, rookie_year: int) -> str:
-    label = _season_string(year)
+    label = season_string(year)
     if year == rookie_year:
         label += " (current rookies)"
     return label
@@ -135,8 +107,8 @@ def render_sidebar() -> None:
         st.header("Draft Class")
 
         try:
-            year_range = _cached_year_range()
-            status = _cached_season_status()
+            year_range = cache.cached_year_range()
+            status = cache.cached_season_status()
         except httpx.HTTPError as exc:
             st.error(f"Backend unreachable: {exc}")
             return
@@ -148,7 +120,7 @@ def render_sidebar() -> None:
         selected_year: int = st.session_state[state.KEY_YEAR]
 
         try:
-            draft_class = _cached_draft_class(selected_year)
+            draft_class = cache.cached_draft_class(selected_year)
         except httpx.HTTPError as exc:
             st.error(f"Failed to load draft class: {exc}")
             return
@@ -156,7 +128,7 @@ def render_sidebar() -> None:
         # Season averages are best-effort — sidebar still works without ppg.
         averages: SeasonAveragesResponse | None
         try:
-            averages = _cached_season_averages(draft_class.season)
+            averages = cache.cached_season_averages(draft_class.season)
         except httpx.HTTPError:
             averages = None
 
