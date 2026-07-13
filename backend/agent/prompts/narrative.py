@@ -15,12 +15,7 @@ Rules:
 - Ground every claim in the numbers provided. Do not invent stats, games, or opponents.
 - Use plain analytical prose. No hype, no cliches ("stepping up", "on fire"), no emojis.
 - If trend signals are absent or mixed, describe the performance as consistent rather than forcing a direction.
-- Set trend_direction to "up" if signals lean positive, "down" if negative, "stable" if mixed or flat.
-- Set confidence based on sample size (games_played), signal strength, and consistency across stats:
-  - 0.85-1.0: 20+ games with multiple strong signals in the same direction
-  - 0.60-0.84: 10-20 games or moderate signals
-  - 0.30-0.59: fewer than 10 games or conflicting signals
-  - below 0.30: almost no data
+- Output only the narrative prose. Do not include any labels, classifications, confidence scores, or metadata — those are computed separately in a follow-up call.
 """
 
 
