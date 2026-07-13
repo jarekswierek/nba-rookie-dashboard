@@ -45,12 +45,6 @@ class Settings(BaseSettings):
     # ── Anthropic ─────────────────────────────────────────────────────
     anthropic_api_key: str = Field(..., min_length=1)
 
-    # ── LangSmith ─────────────────────────────────────────────────────
-    langchain_tracing_v2: bool = True
-    langchain_endpoint: str = "https://api.smith.langchain.com"
-    langchain_api_key: str = Field(..., min_length=1)
-    langchain_project: str = "nba-rookie-dashboard"
-
     # ── Computed DSNs ─────────────────────────────────────────────────
     @computed_field  # type: ignore[prop-decorator]
     @property
