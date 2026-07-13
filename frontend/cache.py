@@ -9,10 +9,11 @@ interaction and evicted on two independent schedules.
 import streamlit as st
 
 from frontend import api_client
+from shared.schemas.career import CareerStatsResponse
 from shared.schemas.draft import DraftClass
 from shared.schemas.season import DraftYearRange, SeasonStatus
 from shared.schemas.season_averages import SeasonAveragesResponse
-from shared.schemas.stats import AggregatedStatsResponse
+from shared.schemas.stats import AggregatedStatsResponse, GameLogsResponse
 
 # TTLs by data volatility. Year range shifts once a season (long).
 # Season status carries games-today which turns over daily (short).
@@ -23,6 +24,8 @@ _TTL_SEASON_STATUS_SECONDS = 60
 _TTL_DRAFT_CLASS_SECONDS = 300
 _TTL_SEASON_AVERAGES_SECONDS = 300
 _TTL_AGGREGATED_STATS_SECONDS = 300
+_TTL_GAME_LOGS_SECONDS = 300
+_TTL_CAREER_STATS_SECONDS = 3600
 
 
 @st.cache_data(ttl=_TTL_YEAR_RANGE_SECONDS)
@@ -50,3 +53,13 @@ def cached_aggregated_stats(
     player_id: int, season: str
 ) -> AggregatedStatsResponse:
     return api_client.get_aggregated_stats(player_id, season)
+
+
+@st.cache_data(ttl=_TTL_GAME_LOGS_SECONDS)
+def cached_game_logs(player_id: int, season: str) -> GameLogsResponse:
+    return api_client.get_game_logs(player_id, season)
+
+
+@st.cache_data(ttl=_TTL_CAREER_STATS_SECONDS)
+def cached_career_stats(player_id: int) -> CareerStatsResponse:
+    return api_client.get_career_stats(player_id)

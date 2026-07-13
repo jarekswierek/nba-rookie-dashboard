@@ -5,9 +5,11 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from backend.api.deps import get_db_session
 from backend.data.aggregation_service import get_aggregated_stats
+from backend.data.career_service import get_career_stats
 from backend.data.game_log_service import get_game_logs
 from backend.data.gap_service import detect_gaps
 from shared.consts import SEASON_PATTERN
+from shared.schemas.career import CareerStatsResponse
 from shared.schemas.stats import AggregatedStatsResponse, GameLogsResponse
 
 router = APIRouter()
@@ -41,3 +43,11 @@ async def get_player_aggregated_stats(
     """Return rolling averages and season aggregates for *player_id*."""
     stats, fetched_at = await get_aggregated_stats(session, player_id, season)
     return AggregatedStatsResponse(stats=stats, fetched_at=fetched_at)
+
+
+@router.get("/{player_id}/career-stats", response_model=CareerStatsResponse)
+async def get_player_career_stats(
+    player_id: int = Path(..., gt=0),
+) -> CareerStatsResponse:
+    """Return per-season career averages for *player_id*."""
+    return await get_career_stats(player_id)

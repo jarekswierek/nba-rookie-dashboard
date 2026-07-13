@@ -18,7 +18,10 @@ from frontend.formatting import (
     fmt_pct_value,
     fmt_value,
 )
+from frontend.views.career import render_career_tab
+from frontend.views.draft_overview import render_draft_class_tab
 from frontend.views.narrative import render_narrative_panel
+from frontend.views.trends import render_trends_tab
 from shared.schemas.draft import DraftPlayer
 from shared.schemas.stats import AggregatedStats
 
@@ -120,14 +123,25 @@ def render_player_view(player_id: int, season: str, year: int) -> None:
         st.warning("Player not found in the selected draft class.")
         return
 
-    try:
-        agg = cache.cached_aggregated_stats(player_id, season)
-    except httpx.HTTPError as exc:
-        st.error(f"Failed to load stats: {exc}")
-        return
+    with st.spinner("Loading player stats…"):
+        try:
+            agg = cache.cached_aggregated_stats(player_id, season)
+        except httpx.HTTPError as exc:
+            st.error(f"Failed to load stats: {exc}")
+            return
 
     _render_header(profile, agg.stats)
     _render_bio_row(profile, season)
     _render_metrics_row(agg.stats)
     st.divider()
     render_narrative_panel(player_id, season, year)
+
+    tab_trends, tab_draft, tab_career = st.tabs(
+        ["📈 Trends", "🏀 Draft Class", "📅 Career"]
+    )
+    with tab_trends:
+        render_trends_tab(player_id, season)
+    with tab_draft:
+        render_draft_class_tab(year, season)
+    with tab_career:
+        render_career_tab(player_id)

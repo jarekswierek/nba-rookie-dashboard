@@ -12,10 +12,11 @@ from functools import lru_cache
 import httpx
 
 from frontend.sse import SSEEvent, iter_sse_events
+from shared.schemas.career import CareerStatsResponse
 from shared.schemas.draft import DraftClass
 from shared.schemas.season import DraftYearRange, SeasonStatus
 from shared.schemas.season_averages import SeasonAveragesResponse
-from shared.schemas.stats import AggregatedStatsResponse
+from shared.schemas.stats import AggregatedStatsResponse, GameLogsResponse
 
 # Base URL of the FastAPI backend. Defaults to the Docker Compose service
 # name; override via env for host-network dev or a deployed backend.
@@ -77,6 +78,23 @@ def get_aggregated_stats(player_id: int, season: str) -> AggregatedStatsResponse
     )
     response.raise_for_status()
     return AggregatedStatsResponse.model_validate(response.json())
+
+
+def get_game_logs(player_id: int, season: str) -> GameLogsResponse:
+    """Return per-game statistics for *player_id* in *season*."""
+    response = _client().get(
+        f"/api/players/{player_id}/game-logs",
+        params={"season": season},
+    )
+    response.raise_for_status()
+    return GameLogsResponse.model_validate(response.json())
+
+
+def get_career_stats(player_id: int) -> CareerStatsResponse:
+    """Return per-season career averages for *player_id*."""
+    response = _client().get(f"/api/players/{player_id}/career-stats")
+    response.raise_for_status()
+    return CareerStatsResponse.model_validate(response.json())
 
 
 def stream_narrative(
