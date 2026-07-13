@@ -1,11 +1,10 @@
 # 🏀 NBA Rookie Dashboard
 
-> **Status: Backend complete — Streamlit UI in progress**
+> **Status: Full-stack MVP complete — evaluation suite and deploy remaining**
 
 An analytics dashboard that tracks NBA rookie statistics and generates AI-powered narrative analysis with **Claude Haiku**, streamed via SSE, backed by a two-level cache (Redis + PostgreSQL).
 
 ![mockup](docs/mockup-preview.png)
-*UI mockup — implementation in progress*
 
 ---
 
@@ -74,7 +73,7 @@ graph LR
 
 ## Project status
 
-`[██████████░░░░░] 63%` — MVP backend complete, UI in progress
+`[████████████░░░] 75%` — Full-stack MVP complete, evaluation and deploy remaining
 
 | Epic | | Status |
 |---|---|---|
@@ -83,7 +82,7 @@ graph LR
 | 3 · Season / draft logic | ✅ | Done |
 | 4 · Stats aggregation + rolling averages + DNP gaps | ✅ | Done |
 | 5 · AI narrative engine (streaming + structured metadata) | ✅ | Done |
-| 6 · Streamlit dashboard | ⏳ | Planned |
+| 6 · Streamlit dashboard | ✅ | Done |
 | 7 · Evaluation suite | ⏳ | Planned |
 | 8 · Portfolio & deploy | ⏳ | Planned |
 
@@ -92,7 +91,7 @@ graph LR
 ## Quickstart
 
 ```bash
-cp .env.example .env        # fill in 3 required keys: POSTGRES_PASSWORD, ANTHROPIC_API_KEY, LANGCHAIN_API_KEY
+cp .env.example .env        # fill in POSTGRES_PASSWORD, ANTHROPIC_API_KEY, LANGCHAIN_API_KEY
 make dev                    # docker compose up — API + UI + Redis + PostgreSQL
 make verify-langsmith       # confirm LangSmith tracing is active
 # open http://localhost:8501
