@@ -132,6 +132,10 @@ test-cov:
 eval:
 	poetry run python evals/run_eval.py
 
+.PHONY: eval-fast
+eval-fast:
+	poetry run python evals/run_eval.py --no-judge
+
 # ── LangSmith ────────────────────────────────────────────────────────────────
 
 .PHONY: verify-langsmith

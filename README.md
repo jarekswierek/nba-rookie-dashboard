@@ -1,6 +1,6 @@
 # 🏀 NBA Rookie Dashboard
 
-> **Status: Full-stack MVP complete — evaluation suite and deploy remaining**
+> **Status: Full-stack MVP + evaluation complete — deploy remaining**
 
 An analytics dashboard that tracks NBA rookie statistics and generates AI-powered narrative analysis with **Claude Haiku**, streamed via SSE, backed by a two-level cache (Redis + PostgreSQL).
 
@@ -73,7 +73,7 @@ graph LR
 
 ## Project status
 
-`[████████████░░░] 75%` — Full-stack MVP complete, evaluation and deploy remaining
+`[██████████████░] 88%` — Full-stack MVP + evaluation complete, deploy remaining
 
 | Epic | | Status |
 |---|---|---|
@@ -83,7 +83,7 @@ graph LR
 | 4 · Stats aggregation + rolling averages + DNP gaps | ✅ | Done |
 | 5 · AI narrative engine (streaming + structured metadata) | ✅ | Done |
 | 6 · Streamlit dashboard | ✅ | Done |
-| 7 · Evaluation suite | ⏳ | Planned |
+| 7 · Evaluation suite | ✅ | Done |
 | 8 · Portfolio & deploy | ⏳ | Planned |
 
 ---
@@ -103,11 +103,12 @@ API docs available at `http://localhost:8000/docs`.
 
 ## Evaluation
 
-The narrative engine is designed to be testable:
+The narrative engine ships with a golden dataset and an automated runner:
 
-- **Golden dataset** — 10–15 `(player_stats, expected_narrative)` pairs
-- **LLM-as-judge** — factual accuracy (does the trend direction match the numbers?), hallucination check, confidence calibration
-- **CI gate** — `make eval` runs against the golden set; PRs blocked if accuracy drops below threshold
+- **Golden dataset** — 15 hand-crafted `(stats → expected_direction)` examples covering the full scenario space: zero games, early season, strong up/down trends, 3P% improvement, DNP gaps, injury return, mixed signals, high/low confidence
+- **LLM-as-judge** — binary questions only (hallucination present? required stats mentioned?) to minimise same-model bias
+- **CI gate** — `make eval` exits 1 when direction accuracy drops below 80%; first run scored **93%**
+- **`make eval-fast`** — direction accuracy only, no judge calls (faster iteration)
 
 ---
 
