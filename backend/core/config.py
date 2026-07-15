@@ -5,6 +5,7 @@ will raise a ValidationError at startup if any required variable is missing —
 fail-fast is intentional.
 """
 
+import os
 from functools import lru_cache
 from typing import Literal
 
@@ -42,6 +43,9 @@ class Settings(BaseSettings):
     redis_port: int = 6379
     redis_db: int = 0
 
+    # ── Frontend ──────────────────────────────────────────────────────
+    frontend_url: str = "http://localhost:8501"
+
     # ── Anthropic ─────────────────────────────────────────────────────
     anthropic_api_key: str = Field(..., min_length=1)
 
@@ -71,8 +75,14 @@ class Settings(BaseSettings):
     @computed_field  # type: ignore[prop-decorator]
     @property
     def redis_url(self) -> str:
-        """Redis connection URL."""
-        return f"redis://{self.redis_host}:{self.redis_port}" f"/{self.redis_db}"
+        """Redis connection URL.
+
+        REDIS_URL env var takes precedence over the individual host/port fields
+        so that managed Redis providers can inject a single connection string.
+        """
+        if url := os.environ.get("REDIS_URL"):
+            return url
+        return f"redis://{self.redis_host}:{self.redis_port}/{self.redis_db}"
 
     @property
     def is_production(self) -> bool:
