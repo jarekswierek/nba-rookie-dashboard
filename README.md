@@ -1,6 +1,6 @@
 # 🏀 NBA Rookie Dashboard
 
-> **Status: Full-stack MVP + evaluation complete — deploy remaining**
+> **Status: Full-stack MVP + evaluation + deploy prep complete — production deploy remaining**
 
 An analytics dashboard that tracks NBA rookie statistics and generates AI-powered narrative analysis with **Claude Haiku**, streamed via SSE, backed by a two-level cache (Redis + PostgreSQL).
 
@@ -73,7 +73,7 @@ graph LR
 
 ## Project status
 
-`[██████████████░] 88%` — Full-stack MVP + evaluation complete, deploy remaining
+`[██████████████░] 93%` — Full-stack MVP + evaluation + deploy prep complete, production deploy remaining
 
 | Epic | | Status |
 |---|---|---|
@@ -84,7 +84,7 @@ graph LR
 | 5 · AI narrative engine (streaming + structured metadata) | ✅ | Done |
 | 6 · Streamlit dashboard | ✅ | Done |
 | 7 · Evaluation suite | ✅ | Done |
-| 8 · Portfolio & deploy | ⏳ | Planned |
+| 8 · Portfolio & deploy | ⏳ | Deploy prep done — production deploy remaining |
 
 ---
 
@@ -98,6 +98,14 @@ make verify-langsmith       # confirm LangSmith tracing is active
 ```
 
 API docs available at `http://localhost:8000/docs`.
+
+**Production environment variables** (optional overrides):
+
+| Variable | Default | Purpose |
+|---|---|---|
+| `REDIS_URL` | built from `REDIS_HOST`/`REDIS_PORT` | single connection string for managed Redis providers |
+| `FRONTEND_URL` | `http://localhost:8501` | UI origin allowed by CORS |
+| `APP_ENV` | `development` | set to `production` to disable `/docs` and `/redoc` |
 
 ---
 
